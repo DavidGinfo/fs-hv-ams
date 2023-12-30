@@ -43,8 +43,7 @@ Status DaisyChain::execute(const TransactionContent command[]) {
 
     if(HAL_UART_Transmit(handle, buffer, writeBufferPosition, HOST_UART_TIMEOUT) != HAL_OK)
         return Status::ERROR;
-    // TODO think about read data buffer length
-    if(HAL_UART_Receive(handle, buffer, readBufferPosition, HOST_UART_TIMEOUT) != HAL_OK)
+    if(HAL_UART_Receive(handle, buffer, receiveBufferSize, HOST_UART_TIMEOUT) != HAL_OK)
         return Status::ERROR;
 
     return readCommand(command);
@@ -106,11 +105,58 @@ Status DaisyChain::initCommandFrame(ReqType requestType, uint8_t dataSize) {
     return writeBufferByte(data);
 }
 
-// TODO implement
+// TODO implement and think about naming
 Status DaisyChain::readCommand(const TransactionContent command[]) {
-    return Status::COMPLETED;
+    auto status = Status::COMPLETED;
+    uint8_t data;
+
+    bool endFlag = false;
+    uint8_t deviceUpperBound = 1;
+
+    for(uint8_t device = 0; device < deviceUpperBound; device++){
+
+        checksum.reset();
+
+        for(uint8_t i = 0; !endFlag; i++){
+            switch(command[i]){
+                case TransactionContent::TC_INIT:
+                    status = readBufferByte(&rf_init);
+                    if(status != Status::COMPLETED)
+                        return status;
+
+                case TransactionContent::TC_DEV_ADR:
+                    status = readBufferByte(&rf_devAdr);
+                    if(status != Status::COMPLETED)
+                        return status;
+
+                case TransactionContent::TC_REG_ADR:
+                    status = readBufferWord(&rf_regAdr);
+                    if(status != Status::COMPLETED)
+                        return status;
+
+                case TransactionContent::TC_DATA:
+                    for(uint8_t j = 0; j < rf_dataLength; j++){
+                        status = readBufferByte(&data);
+                        if(status != Status::COMPLETED)
+                            return status;
+
+                        writeDataBufferByte(data);
+                    }
+
+                case TransactionContent::TC_CRC:
+                    endFlag = true;
+                    rf_crc_calc = swap(checksum.get());
+                    status = readBufferWord(&rf_crc);
+                    if(status != Status::COMPLETED)
+                        return status;
+            }
+        }
+    }
+
+    return status;
 }
 
+// TODO think about naming
 Status DaisyChain::writeCommand(const TransactionContent command[]) {
     auto status = Status::COMPLETED;
     bool endFlag = false;
@@ -118,22 +164,22 @@ Status DaisyChain::writeCommand(const TransactionContent command[]) {
     for(uint8_t i = 0; !endFlag; i++){
         switch(command[i]){
             case TransactionContent::TC_INIT:
-                status = writeBufferByte(tc_init);
+                status = writeBufferByte(cf_init);
                 if(status != Status::COMPLETED)
                     return status;
 
             case TransactionContent::TC_DEV_ADR:
-                status = writeBufferByte(tc_devAdr);
+                status = writeBufferByte(cf_devAdr);
                 if(status != Status::COMPLETED)
                     return status;
 
             case TransactionContent::TC_REG_ADR:
-                status = writeBufferWord(tc_regAdr);
+                status = writeBufferWord(cf_regAdr);
                 if(status != Status::COMPLETED)
                     return status;
 
             case TransactionContent::TC_DATA:
-                for(uint8_t j = 0; j < dataLength; j++){
+                for(uint8_t j = 0; j < cf_dataLength; j++){
                     status = writeBufferByte(dataBuffer[j]);
                     if(status != Status::COMPLETED)
                         return status;
@@ -141,7 +187,8 @@ Status DaisyChain::writeCommand(const TransactionContent command[]) {
 
             case TransactionContent::TC_CRC:
                 endFlag = true;
-                status = writeBufferWord(swap(checksum.get()));
+                cf_crc = swap(checksum.get());
+                status = writeBufferWord(cf_crc);
                 if(status != Status::COMPLETED)
                     return status;
         }

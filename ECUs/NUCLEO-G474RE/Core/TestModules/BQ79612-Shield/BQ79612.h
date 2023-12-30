@@ -80,6 +80,7 @@ namespace BQ79612 {
         uint8_t buffer[BUFFER_SIZE] = {};
         uint8_t writeBufferPosition = 0;
         uint8_t readBufferPosition = 0;
+        uint8_t receiveBufferSize = 0;
 
         uint8_t dataBuffer[DATA_BUFFER_SIZE] = {};
         uint8_t writeDataBufferPosition = 0;
@@ -87,11 +88,17 @@ namespace BQ79612 {
 
         Checksum::CRC16Value checksum = Checksum::IBM_AMS.create();
 
-        uint8_t tc_init = 0;
-        uint8_t tc_devAdr = 0;
-        uint16_t tc_regAdr = 0;
-        uint8_t  dataLength = 0;
-        uint16_t tc_crc    = 0;
+        uint8_t cf_init = 0;
+        uint8_t cf_devAdr = 0;
+        uint16_t cf_regAdr = 0;
+        uint16_t cf_crc    = 0;
+        uint8_t  cf_dataLength = 0;
+        uint8_t rf_init = 0;
+        uint8_t rf_devAdr = 0;
+        uint16_t rf_regAdr = 0;
+        uint16_t rf_crc    = 0;
+        uint16_t rf_crc_calc = 0;
+        uint8_t  rf_dataLength = 0;
 
         void init_UART_TX_GPIO();
 
