@@ -3,13 +3,17 @@
 #include <util/Common.h>
 #include <data/checksum/CRC.h>
 #include <parallel/Delay.h>
+#include <IO/GPIO/Pin.h>
+#include "main.h"
+
+extern TIM_HandleTypeDef htim16;
 
 namespace BQ79612 {
 
     const uint8_t TRANSACTION_FRAME_OVERHEAD = 6;
     const uint8_t MAX_DATA_SIZE_COMMAND_FRAME = 8;
     const uint8_t MAX_DATA_SIZE_RESPONSE_FRAME = 128;
-    const uint8_t MAX_LENGTH_TRANSACTION_FRAME = 128 + 6;
+    const uint8_t MAX_LENGTH_TRANSACTION_FRAME = MAX_DATA_SIZE_RESPONSE_FRAME + TRANSACTION_FRAME_OVERHEAD;
     const uint8_t MAX_DEVICE_COUNT = 64;
     //those constants are only valid for testing with the shield (max length of a transaction frame multiplied by the devices of the chain(3 with base device)
     //more generic constants would use huge space in ram (need a better idea for that)
@@ -32,6 +36,14 @@ namespace BQ79612 {
 
     };
 
+    enum TransactionContent {
+        TC_INIT,
+        TC_DEV_ADR,
+        TC_REG_ADR,
+        TC_DATA,
+        TC_CRC
+    };
+
     enum Status : uint8_t {
         ERROR = 0,
         COMPLETED = 1
@@ -39,6 +51,10 @@ namespace BQ79612 {
 
     class DaisyChain{
       public:
+        void init();
+
+        Status ping(uint16_t time_us);
+
         Status readSingleDevice(uint8_t devAddress, ReadOnlyRegister startRegister, uint8_t registerCount);
 
         Status writeSingleDevice();
@@ -54,22 +70,47 @@ namespace BQ79612 {
         Status broadcastWriteReverse();
 
       private:
+        GPIO::Pin UART_TX;
+        GPIO::Pin UART_RX;
+        GPIO_InitTypeDef UART_TX_GPIO_InitStruct;
+
         UART_HandleTypeDef *handle;
         uint8_t deviceCount = 0;
 
         uint8_t buffer[BUFFER_SIZE] = {};
-        uint8_t dataBuffer[DATA_BUFFER_SIZE] = {};
         uint8_t writeBufferPosition = 0;
         uint8_t readBufferPosition = 0;
 
-        Checksum::CRC16Value checksum = Checksum::IBM_AMS.create();
-        uint16_t actualChecksum = 0;
+        uint8_t dataBuffer[DATA_BUFFER_SIZE] = {};
+        uint8_t writeDataBufferPosition = 0;
+        uint8_t readDataBufferPosition = 0;
 
+        Checksum::CRC16Value checksum = Checksum::IBM_AMS.create();
+
+        uint8_t tc_init = 0;
+        uint8_t tc_devAdr = 0;
+        uint16_t tc_regAdr = 0;
+        uint8_t  dataLength = 0;
+        uint16_t tc_crc    = 0;
+
+        void init_UART_TX_GPIO();
+
+        void resetData();
+        Status execute(const TransactionContent command[]);
+
+        Status readBufferByte(uint8_t *value);
         Status writeBufferByte(uint8_t value);
+
+        Status readBufferWord(uint16_t *value);
         Status writeBufferWord(uint16_t value);
+
+        Status readDataBufferByte(uint8_t value);
+        Status writeDataBufferByte(uint8_t value);
+
         Status initCommandFrame(ReqType requestType, uint8_t dataSize);
         Status appendCRCBytes();
-        void resetData();
-        Status execute();
+
+        Status readCommand(const TransactionContent command[]);
+        Status writeCommand(const TransactionContent command[]);
     };
 }
