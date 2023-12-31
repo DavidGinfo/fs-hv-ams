@@ -2,7 +2,7 @@
 
 using namespace BQ79612;
 
-const TransactionContent SINGLE_DEVICE[] = {
+const TransactionContent SINGLE_DEVICE_COMMAND_FRAME[] = {
         TransactionContent::TC_INIT,
         TransactionContent::TC_DEV_ADR,
         TransactionContent::TC_REG_ADR,
@@ -10,8 +10,16 @@ const TransactionContent SINGLE_DEVICE[] = {
         TransactionContent::TC_CRC
 };
 
-const TransactionContent MULTI_DEVICE[] = {
+const TransactionContent MULTI_DEVICE_COMMAND_FRAME[] = {
         TransactionContent::TC_INIT,
+        TransactionContent::TC_REG_ADR,
+        TransactionContent::TC_DATA,
+        TransactionContent::TC_CRC
+};
+
+const TransactionContent REPSPONSE_FRAME[] = {
+        TransactionContent::TC_INIT,
+        TransactionContent::TC_DEV_ADR,
         TransactionContent::TC_REG_ADR,
         TransactionContent::TC_DATA,
         TransactionContent::TC_CRC
@@ -36,17 +44,19 @@ void DaisyChain::resetData() {
     readDataBufferPosition = 0;
 }
 
-Status DaisyChain::execute(const TransactionContent command[]) {
+Status DaisyChain::execute(const TransactionContent command[], uint8_t frameCount) {
     resetData();
 
-    writeCommand(command);
+    writeCommandFrame(command);
 
     if(HAL_UART_Transmit(handle, buffer, writeBufferPosition, HOST_UART_TIMEOUT) != HAL_OK)
         return Status::ERROR;
     if(HAL_UART_Receive(handle, buffer, receiveBufferSize, HOST_UART_TIMEOUT) != HAL_OK)
         return Status::ERROR;
 
-    return readCommand(command);
+    readResponseFrames(frameCount);
+
+    return Status::ERROR;
 }
 
 // TODO implement
@@ -105,32 +115,29 @@ Status DaisyChain::initCommandFrame(ReqType requestType, uint8_t dataSize) {
     return writeBufferByte(data);
 }
 
-// TODO implement and think about naming
-Status DaisyChain::readCommand(const TransactionContent command[]) {
+Status DaisyChain::readResponseFrames(uint8_t frameCount) {
     auto status = Status::COMPLETED;
+    bool endFlag = false;
     uint8_t data;
 
-    bool endFlag = false;
-    uint8_t deviceUpperBound = 1;
-
-    for(uint8_t device = 0; device < deviceUpperBound; device++){
+    for(uint8_t frame = 0; frame < frameCount; frame++){
 
         checksum.reset();
 
         for(uint8_t i = 0; !endFlag; i++){
-            switch(command[i]){
+            switch(REPSPONSE_FRAME[i]){
                 case TransactionContent::TC_INIT:
-                    status = readBufferByte(&rf_init);
+                    status = readBufferByte(&rf_init[frame]);
                     if(status != Status::COMPLETED)
                         return status;
 
                 case TransactionContent::TC_DEV_ADR:
-                    status = readBufferByte(&rf_devAdr);
+                    status = readBufferByte(&rf_devAdr[frame]);
                     if(status != Status::COMPLETED)
                         return status;
 
                 case TransactionContent::TC_REG_ADR:
-                    status = readBufferWord(&rf_regAdr);
+                    status = readBufferWord(&rf_regAdr[frame]);
                     if(status != Status::COMPLETED)
                         return status;
 
@@ -145,8 +152,8 @@ Status DaisyChain::readCommand(const TransactionContent command[]) {
 
                 case TransactionContent::TC_CRC:
                     endFlag = true;
-                    rf_crc_calc = swap(checksum.get());
-                    status = readBufferWord(&rf_crc);
+                    rf_crc_calc[frame] = swap(checksum.get());
+                    status = readBufferWord(&rf_crc[frame]);
                     if(status != Status::COMPLETED)
                         return status;
             }
@@ -156,8 +163,7 @@ Status DaisyChain::readCommand(const TransactionContent command[]) {
     return status;
 }
 
-// TODO think about naming
-Status DaisyChain::writeCommand(const TransactionContent command[]) {
+Status DaisyChain::writeCommandFrame(const TransactionContent command[]) {
     auto status = Status::COMPLETED;
     bool endFlag = false;
 
