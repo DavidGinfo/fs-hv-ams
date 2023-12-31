@@ -249,6 +249,10 @@ Status DaisyChain::ping(Ping_us time_us) {
     return Status::COMPLETED;
 }
 
+Status DaisyChain::readData(uint8_t *value) {
+    return readDataBufferByte(value);
+}
+
 Status DaisyChain::readSingleDevice(uint8_t devAddress, ReadRegister startRegister, uint8_t registerCount) {
     Status status = getCommandInit(ReqType::SINGLE_DEVICE_READ, 1, &cf_init);
     if(status != Status::COMPLETED){
