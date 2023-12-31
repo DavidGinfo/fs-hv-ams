@@ -250,21 +250,20 @@ Status DaisyChain::ping(Ping_us time_us) {
 }
 
 Status DaisyChain::readSingleDevice(uint8_t devAddress, ReadRegister startRegister, uint8_t registerCount) {
-    Status status;
+    Status status = getCommandInit(ReqType::SINGLE_DEVICE_READ, 1, &cf_init);
+    if(status != Status::COMPLETED){
+        return status;
+    }else if(devAddress > MAX_DEVICE_COUNT){
+        status = Status::ERROR;
+        return  status;
+    }
+
     cf_dataLength = 1;
     rf_dataLength = registerCount;
     receiveBufferSize = rf_dataLength + TRANSACTION_FRAME_OVERHEAD;
     receiveDataBufferSize = rf_dataLength;
 
-    status = getCommandInit(ReqType::SINGLE_DEVICE_READ, 1, &cf_init);
-    if(status != Status::COMPLETED)
-        return status;
-
-    if(devAddress > MAX_DEVICE_COUNT)
-        return Status::ERROR;
-    else
-        cf_devAdr = devAddress;
-
+    cf_devAdr = devAddress;
     cf_regAdr = startRegister;
 
     writeDataBufferByte(registerCount);
@@ -275,21 +274,20 @@ Status DaisyChain::readSingleDevice(uint8_t devAddress, ReadRegister startRegist
 }
 
 Status DaisyChain::writeSingleDevice(uint8_t devAddress, WriteRegister startRegister, uint8_t *data, uint8_t dataSize) {
-    Status status;
+    Status status = getCommandInit(ReqType::SINGLE_DEVICE_WRITE, dataSize, &cf_init);
+    if(status != Status::COMPLETED){
+        return status;
+    }else if(devAddress > MAX_DEVICE_COUNT){
+        status = Status::ERROR;
+        return status;
+    }
+
     cf_dataLength = dataSize;
     rf_dataLength = 0;
     receiveBufferSize = 0;
     receiveDataBufferSize = 0;
 
-    status = getCommandInit(ReqType::SINGLE_DEVICE_WRITE, dataSize, &cf_init);
-    if(status != Status::COMPLETED)
-        return status;
-
-    if(devAddress > MAX_DEVICE_COUNT)
-        return Status::ERROR;
-    else
-        cf_devAdr = devAddress;
-
+    cf_devAdr = devAddress;
     cf_regAdr = startRegister;
 
     for(uint8_t i = 0; i < dataSize; i++)
@@ -301,11 +299,44 @@ Status DaisyChain::writeSingleDevice(uint8_t devAddress, WriteRegister startRegi
 }
 
 Status DaisyChain::readStack(ReadRegister startRegister, uint8_t registerCount) {
-    return ERROR;
+    Status status = getCommandInit(ReqType::STACK_READ, 1, &cf_init);
+    if(status != Status::COMPLETED){
+        return status;
+    }
+
+    cf_dataLength = 1;
+    rf_dataLength = registerCount;
+    receiveBufferSize = (rf_dataLength + TRANSACTION_FRAME_OVERHEAD) * this->deviceCount;
+    receiveDataBufferSize = rf_dataLength * this->deviceCount;
+
+    cf_regAdr = startRegister;
+
+    writeDataBufferByte(registerCount);
+
+    status = execute(MULTI_DEVICE_COMMAND_FRAME, this->deviceCount);
+
+    return status;
 }
 
 Status DaisyChain::writeStack(WriteRegister startRegister, uint8_t *data, uint8_t dataSize) {
-    return ERROR;
+    Status status = getCommandInit(ReqType::STACK_WRITE, dataSize, &cf_init);
+    if(status != Status::COMPLETED){
+        return status;
+    }
+
+    cf_dataLength = dataSize;
+    rf_dataLength = 0;
+    receiveBufferSize = 0;
+    receiveDataBufferSize = 0;
+
+    cf_regAdr = startRegister;
+
+    for(uint8_t i = 0; i < dataSize; i++)
+        writeDataBufferByte(data[i]);
+
+    status = execute(MULTI_DEVICE_COMMAND_FRAME, this->deviceCount);
+
+    return status;
 }
 
 Status DaisyChain::broadcastRead(ReadRegister startRegister, uint8_t registerCount) {
