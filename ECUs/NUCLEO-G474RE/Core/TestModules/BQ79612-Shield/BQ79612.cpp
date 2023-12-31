@@ -59,9 +59,14 @@ Status DaisyChain::execute(const TransactionContent command[], uint8_t frameCoun
     return Status::ERROR;
 }
 
-// TODO implement
 Status DaisyChain::readBufferByte(uint8_t *value) {
-    return ERROR;
+    if(readBufferPosition >= receiveBufferSize + 1)
+        return Status::ERROR;
+
+    *value = buffer[readBufferPosition++];
+    checksum.update(*value);
+
+    return Status::COMPLETED;
 }
 
 Status DaisyChain::writeBufferByte(uint8_t value) {
@@ -74,8 +79,25 @@ Status DaisyChain::writeBufferByte(uint8_t value) {
     return Status::COMPLETED;
 }
 
+Status DaisyChain::readBufferWord(uint16_t *value) {
+    uint8_t msb;
+    uint8_t lsb;
+
+    Status status = readBufferByte(&msb);
+    if(status != Status::COMPLETED)
+        return Status::ERROR;
+
+    status = readBufferByte(&lsb);
+    if(status != Status::COMPLETED)
+        return Status::ERROR;
+
+    *value = (static_cast<uint16_t>(msb) << 8) | static_cast<uint16_t>(lsb);
+
+    return Status::COMPLETED;
+}
+
 Status DaisyChain::writeBufferWord(uint16_t value) {
-    auto status = writeBufferByte(value >> 8);
+    Status status = writeBufferByte(value >> 8);
     if(status != Status::COMPLETED)
         return status;
 
@@ -86,12 +108,16 @@ Status DaisyChain::writeBufferWord(uint16_t value) {
     return Status::COMPLETED;
 }
 
-// TODO implement
-Status DaisyChain::readBufferWord(uint16_t *value) {
-    return ERROR;
+Status DaisyChain::readDataBufferByte(uint8_t *value) {
+    if(readDataBufferPosition >= receiveDataBufferSize + 1)
+        return Status::ERROR;
+
+    *value = dataBuffer[readDataBufferPosition++];
+
+    return Status::COMPLETED;
 }
 
-Status DaisyChain::readDataBufferByte(uint8_t value) {
+Status DaisyChain::writeDataBufferByte(uint8_t value) {
     if(writeDataBufferPosition >= DATA_BUFFER_SIZE)
         return Status::ERROR;
 
@@ -99,12 +125,7 @@ Status DaisyChain::readDataBufferByte(uint8_t value) {
 
     return Status::COMPLETED;
 }
-
-// TODO implement
-Status DaisyChain::writeDataBufferByte(uint8_t value) {
-    return ERROR;
-}
-
+/*
 // TODO see if this is still necessary
 Status DaisyChain::initCommandFrame(ReqType requestType, uint8_t dataSize) {
     if(dataSize > 8 || dataSize == 0)
@@ -112,11 +133,12 @@ Status DaisyChain::initCommandFrame(ReqType requestType, uint8_t dataSize) {
 
     uint8_t data = (dataSize - 1) | (requestType << 4) | (1 << 7);
 
-    return writeBufferByte(data);
-}
+    //return writeBufferByte(data);
+    return Status::ERROR;
+}*/
 
 Status DaisyChain::readResponseFrames(uint8_t frameCount) {
-    auto status = Status::COMPLETED;
+    Status status = Status::COMPLETED;
     bool endFlag = false;
     uint8_t data;
 
@@ -164,7 +186,7 @@ Status DaisyChain::readResponseFrames(uint8_t frameCount) {
 }
 
 Status DaisyChain::writeCommandFrame(const TransactionContent command[]) {
-    auto status = Status::COMPLETED;
+    Status status = Status::COMPLETED;
     bool endFlag = false;
 
     for(uint8_t i = 0; !endFlag; i++){
@@ -225,9 +247,9 @@ Status DaisyChain::ping(uint16_t time_us) {
     return Status::COMPLETED;
 }
 
-// TODO implement with new driver architecture
+/*
 Status DaisyChain::readSingleDevice(uint8_t devAddress, ReadOnlyRegister startRegister, uint8_t registerCount) {
-    auto status = initCommandFrame(ReqType::SINGLE_DEVICE_READ, 1);
+    Status status = initCommandFrame(ReqType::SINGLE_DEVICE_READ, 1);
     if(status != Status::COMPLETED)
         return status;
 
@@ -260,4 +282,4 @@ Status DaisyChain::readSingleDevice(uint8_t devAddress, ReadOnlyRegister startRe
     // TODO actual read: write data bytes in data buffer readByte/Word/Data function
 
     return Status::COMPLETED;
-}
+}*/

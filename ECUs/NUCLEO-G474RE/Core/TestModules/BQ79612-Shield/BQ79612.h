@@ -82,6 +82,7 @@ namespace BQ79612 {
         uint8_t writeBufferPosition = 0;
         uint8_t readBufferPosition = 0;
         uint8_t receiveBufferSize = 0;
+        uint8_t receiveDataBufferSize = 0;
 
         uint8_t dataBuffer[DATA_BUFFER_SIZE] = {};
         uint8_t writeDataBufferPosition = 0;
@@ -112,11 +113,10 @@ namespace BQ79612 {
         Status readBufferWord(uint16_t *value);
         Status writeBufferWord(uint16_t value);
 
-        Status readDataBufferByte(uint8_t value);
+        Status readDataBufferByte(uint8_t *value);
         Status writeDataBufferByte(uint8_t value);
 
         Status initCommandFrame(ReqType requestType, uint8_t dataSize);
-        Status appendCRCBytes();
 
         Status readResponseFrames(uint8_t frameCount);
         Status writeCommandFrame(const TransactionContent command[]);
