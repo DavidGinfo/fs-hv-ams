@@ -22,6 +22,13 @@ namespace BQ79612 {
     const uint8_t DATA_BUFFER_SIZE = TEST_DEVICE_COUNT * MAX_DATA_SIZE_RESPONSE_FRAME;
     Parallel::TimeMS HOST_UART_TIMEOUT = 10;
 
+    enum TransactionContent {
+        TC_INIT,
+        TC_DEV_ADR,
+        TC_REG_ADR,
+        TC_DATA,
+        TC_CRC
+    };
 
     enum ReqType : uint8_t {
         SINGLE_DEVICE_READ = 0,
@@ -33,16 +40,16 @@ namespace BQ79612 {
         BROADCAST_WRITE_REVERSE = 6,
     };
 
-    enum ReadOnlyRegister : uint16_t {
+    enum Ping_us : uint16_t {
 
     };
 
-    enum TransactionContent {
-        TC_INIT,
-        TC_DEV_ADR,
-        TC_REG_ADR,
-        TC_DATA,
-        TC_CRC
+    enum ReadRegister : uint16_t {
+
+    };
+
+    enum WriteRegister : uint16_t {
+
     };
 
     enum Status : uint8_t {
@@ -56,19 +63,19 @@ namespace BQ79612 {
 
         Status ping(uint16_t time_us);
 
-        Status readSingleDevice(uint8_t devAddress, ReadOnlyRegister startRegister, uint8_t registerCount);
+        Status readSingleDevice(uint8_t devAddress, ReadRegister startRegister, uint8_t registerCount);
 
-        Status writeSingleDevice();
+        Status writeSingleDevice(uint8_t devAddress, WriteRegister startRegister, uint8_t *data, uint8_t dataSize);
 
-        Status readStack();
+        Status readStack(ReadRegister startRegister, uint8_t registerCount);
 
-        Status writeStack();
+        Status writeStack(WriteRegister startRegister, uint8_t *data, uint8_t dataSize);
 
-        Status broadcastRead();
+        Status broadcastRead(ReadRegister startRegister, uint8_t registerCount);
 
-        Status broadcastWrite();
+        Status broadcastWrite(WriteRegister startRegister, uint8_t *data, uint8_t dataSize);
 
-        Status broadcastWriteReverse();
+        Status broadcastWriteReverse(WriteRegister startRegister, uint8_t *data, uint8_t dataSize);
 
       private:
         GPIO::Pin UART_TX;
@@ -90,17 +97,18 @@ namespace BQ79612 {
 
         Checksum::CRC16Value checksum = Checksum::IBM_AMS.create();
 
+        uint8_t  cf_dataLength = 0;
+        uint8_t  rf_dataLength = 0;
         uint8_t cf_init = 0;
         uint8_t cf_devAdr = 0;
         uint16_t cf_regAdr = 0;
         uint16_t cf_crc    = 0;
-        uint8_t  cf_dataLength = 0;
+
         uint8_t rf_init[TEST_DEVICE_COUNT] = {};
         uint8_t rf_devAdr[TEST_DEVICE_COUNT] = {};
         uint16_t rf_regAdr[TEST_DEVICE_COUNT] = {};
         uint16_t rf_crc[TEST_DEVICE_COUNT]    = {};
         uint16_t rf_crc_calc[TEST_DEVICE_COUNT] = {};
-        uint8_t  rf_dataLength = 0;
 
         void init_UART_TX_GPIO();
 
@@ -116,9 +124,9 @@ namespace BQ79612 {
         Status readDataBufferByte(uint8_t *value);
         Status writeDataBufferByte(uint8_t value);
 
-        Status initCommandFrame(ReqType requestType, uint8_t dataSize);
+        Status getCommandInit(ReqType requestType, uint8_t dataSize, uint8_t *value);
 
-        Status readResponseFrames(uint8_t frameCount);
+        Status readResponseFrames(uint8_t responseFrameCount);
         Status writeCommandFrame(const TransactionContent command[]);
     };
 }
