@@ -15,10 +15,11 @@ namespace BQ79612 {
     const uint8_t MAX_DATA_SIZE_RESPONSE_FRAME = 128;
     const uint8_t MAX_LENGTH_TRANSACTION_FRAME = MAX_DATA_SIZE_RESPONSE_FRAME + TRANSACTION_FRAME_OVERHEAD;
     const uint8_t MAX_DEVICE_COUNT = 64;
+    const uint8_t TEST_DEVICE_COUNT = 3;
     //those constants are only valid for testing with the shield (max length of a transaction frame multiplied by the devices of the chain(3 with base device)
     //more generic constants would use huge space in ram (need a better idea for that)
-    const uint8_t BUFFER_SIZE = 3 * MAX_LENGTH_TRANSACTION_FRAME;
-    const uint8_t DATA_BUFFER_SIZE = 2 * MAX_DATA_SIZE_RESPONSE_FRAME;
+    const uint8_t BUFFER_SIZE = TEST_DEVICE_COUNT * MAX_LENGTH_TRANSACTION_FRAME;
+    const uint8_t DATA_BUFFER_SIZE = TEST_DEVICE_COUNT * MAX_DATA_SIZE_RESPONSE_FRAME;
     Parallel::TimeMS HOST_UART_TIMEOUT = 10;
 
 
@@ -93,17 +94,17 @@ namespace BQ79612 {
         uint16_t cf_regAdr = 0;
         uint16_t cf_crc    = 0;
         uint8_t  cf_dataLength = 0;
-        uint8_t rf_init = 0;
-        uint8_t rf_devAdr = 0;
-        uint16_t rf_regAdr = 0;
-        uint16_t rf_crc    = 0;
-        uint16_t rf_crc_calc = 0;
+        uint8_t rf_init[TEST_DEVICE_COUNT] = {};
+        uint8_t rf_devAdr[TEST_DEVICE_COUNT] = {};
+        uint16_t rf_regAdr[TEST_DEVICE_COUNT] = {};
+        uint16_t rf_crc[TEST_DEVICE_COUNT]    = {};
+        uint16_t rf_crc_calc[TEST_DEVICE_COUNT] = {};
         uint8_t  rf_dataLength = 0;
 
         void init_UART_TX_GPIO();
 
         void resetData();
-        Status execute(const TransactionContent command[]);
+        Status execute(const TransactionContent command[], uint8_t frameCount);
 
         Status readBufferByte(uint8_t *value);
         Status writeBufferByte(uint8_t value);
@@ -117,7 +118,7 @@ namespace BQ79612 {
         Status initCommandFrame(ReqType requestType, uint8_t dataSize);
         Status appendCRCBytes();
 
-        Status readCommand(const TransactionContent command[]);
-        Status writeCommand(const TransactionContent command[]);
+        Status readResponseFrames(uint8_t frameCount);
+        Status writeCommandFrame(const TransactionContent command[]);
     };
 }
