@@ -59,9 +59,15 @@ namespace BQ79612 {
 
     class DaisyChain{
       public:
+        explicit DaisyChain(UART_HandleTypeDef &uartHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
+
+        DaisyChain(DaisyChain &) = delete;
+
+        DaisyChain(DaisyChain &&) = delete;
+
         void init();
 
-        Status ping(uint16_t time_us);
+        Status ping(Ping_us time_us);
 
         Status readSingleDevice(uint8_t devAddress, ReadRegister startRegister, uint8_t registerCount);
 
@@ -78,27 +84,28 @@ namespace BQ79612 {
         Status broadcastWriteReverse(WriteRegister startRegister, uint8_t *data, uint8_t dataSize);
 
       private:
+        UART_HandleTypeDef *uartHandle;
         GPIO::Pin UART_TX;
         GPIO::Pin UART_RX;
+        uint8_t deviceCount = 0;
+
         GPIO_InitTypeDef UART_TX_GPIO_InitStruct;
 
-        UART_HandleTypeDef *handle;
-        uint8_t deviceCount = 0;
+        Checksum::CRC16Value checksum = Checksum::IBM_AMS.create();
 
         uint8_t buffer[BUFFER_SIZE] = {};
         uint8_t writeBufferPosition = 0;
         uint8_t readBufferPosition = 0;
-        uint8_t receiveBufferSize = 0;
-        uint8_t receiveDataBufferSize = 0;
 
         uint8_t dataBuffer[DATA_BUFFER_SIZE] = {};
         uint8_t writeDataBufferPosition = 0;
         uint8_t readDataBufferPosition = 0;
 
-        Checksum::CRC16Value checksum = Checksum::IBM_AMS.create();
-
         uint8_t  cf_dataLength = 0;
         uint8_t  rf_dataLength = 0;
+        uint8_t receiveBufferSize = 0;
+        uint8_t receiveDataBufferSize = 0;
+
         uint8_t cf_init = 0;
         uint8_t cf_devAdr = 0;
         uint16_t cf_regAdr = 0;
@@ -113,7 +120,6 @@ namespace BQ79612 {
         void init_UART_TX_GPIO();
 
         void resetData();
-        Status execute(const TransactionContent command[], uint8_t frameCount);
 
         Status readBufferByte(uint8_t *value);
         Status writeBufferByte(uint8_t value);
@@ -128,5 +134,7 @@ namespace BQ79612 {
 
         Status readResponseFrames(uint8_t responseFrameCount);
         Status writeCommandFrame(const TransactionContent command[]);
+
+        Status execute(const TransactionContent command[], uint8_t responseFrameCount);
     };
 }

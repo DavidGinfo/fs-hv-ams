@@ -32,31 +32,12 @@ void DaisyChain::init_UART_TX_GPIO() {
     UART_TX_GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 }
 
-void DaisyChain::init() {
-    init_UART_TX_GPIO();
-}
-
 void DaisyChain::resetData() {
     checksum.reset();
     writeBufferPosition = 0;
     readBufferPosition = 0;
     writeDataBufferPosition = 0;
     readDataBufferPosition = 0;
-}
-
-Status DaisyChain::execute(const TransactionContent command[], uint8_t responseFrameCount) {
-    resetData();
-
-    writeCommandFrame(command);
-
-    if(HAL_UART_Transmit(handle, buffer, writeBufferPosition, HOST_UART_TIMEOUT) != HAL_OK)
-        return Status::ERROR;
-    if(HAL_UART_Receive(handle, buffer, receiveBufferSize, HOST_UART_TIMEOUT) != HAL_OK)
-        return Status::ERROR;
-
-    readResponseFrames(responseFrameCount);
-
-    return Status::ERROR;
 }
 
 Status DaisyChain::readBufferByte(uint8_t *value) {
@@ -223,9 +204,32 @@ Status DaisyChain::writeCommandFrame(const TransactionContent command[]) {
     return status;
 }
 
-// implement clean solution for exact delay in us (with rtos and HW timer in combination)
-Status DaisyChain::ping(uint16_t time_us) {
-    HAL_UART_DeInit(handle);
+Status DaisyChain::execute(const TransactionContent command[], uint8_t responseFrameCount) {
+    resetData();
+
+    writeCommandFrame(command);
+
+    if(HAL_UART_Transmit(uartHandle, buffer, writeBufferPosition, HOST_UART_TIMEOUT) != HAL_OK)
+        return Status::ERROR;
+    if(HAL_UART_Receive(uartHandle, buffer, receiveBufferSize, HOST_UART_TIMEOUT) != HAL_OK)
+        return Status::ERROR;
+
+    readResponseFrames(responseFrameCount);
+
+    return Status::ERROR;
+}
+
+DaisyChain::DaisyChain(UART_HandleTypeDef &uartHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx)
+    : uartHandle(&uartHandle), deviceCount(deviceCount), UART_TX(uart_tx), UART_RX(uart_rx) {
+}
+
+void DaisyChain::init() {
+    init_UART_TX_GPIO();
+}
+
+// implement clean solution for exact delay in us (with rtos and HW timer in combination), commit tim handle via constructor
+Status DaisyChain::ping(Ping_us time_us) {
+    HAL_UART_DeInit(uartHandle);
 
     HAL_GPIO_Init(UART_TX.getPort(), &UART_TX_GPIO_InitStruct);
 
@@ -240,7 +244,7 @@ Status DaisyChain::ping(uint16_t time_us) {
 
     HAL_GPIO_DeInit(UART_TX.getPort(), UART_TX.getPin());
 
-    HAL_UART_Init(handle);
+    HAL_UART_Init(uartHandle);
 
     return Status::COMPLETED;
 }
@@ -265,7 +269,9 @@ Status DaisyChain::readSingleDevice(uint8_t devAddress, ReadRegister startRegist
 
     writeDataBufferByte(registerCount);
 
-    return execute(SINGLE_DEVICE_COMMAND_FRAME, 1);
+    status = execute(SINGLE_DEVICE_COMMAND_FRAME, 1);
+
+    return status;
 }
 
 Status DaisyChain::writeSingleDevice(uint8_t devAddress, WriteRegister startRegister, uint8_t *data, uint8_t dataSize) {
@@ -289,42 +295,27 @@ Status DaisyChain::writeSingleDevice(uint8_t devAddress, WriteRegister startRegi
     for(uint8_t i = 0; i < dataSize; i++)
         writeDataBufferByte(data[i]);
 
-    return execute(SINGLE_DEVICE_COMMAND_FRAME, 0);
+    status = execute(SINGLE_DEVICE_COMMAND_FRAME, 0);
+
+    return status;
 }
 
-/*
-Status DaisyChain::readSingleDevice(uint8_t devAddress, ReadOnlyRegister startRegister, uint8_t registerCount) {
-    Status status = initCommandFrame(ReqType::SINGLE_DEVICE_READ, 1);
-    if(status != Status::COMPLETED)
-        return status;
+Status DaisyChain::readStack(ReadRegister startRegister, uint8_t registerCount) {
+    return ERROR;
+}
 
-    if(devAddress > deviceCount - 1)
-        return Status::ERROR;
-    status = writeBufferByte(devAddress);
-    if(status != Status::COMPLETED)
-        return status;
+Status DaisyChain::writeStack(WriteRegister startRegister, uint8_t *data, uint8_t dataSize) {
+    return ERROR;
+}
 
-    status = writeBufferWord(startRegister);
-    if(status != Status::COMPLETED)
-        return status;
+Status DaisyChain::broadcastRead(ReadRegister startRegister, uint8_t registerCount) {
+    return ERROR;
+}
 
-    // TODO: implement write data function with writeDataBufferPosition++ which automatically adds the data to the buffer AND databuffer
-    status = writeBufferByte(registerCount - 1);
-    if(status != Status::COMPLETED)
-        return status;
+Status DaisyChain::broadcastWrite(WriteRegister startRegister, uint8_t *data, uint8_t dataSize) {
+    return ERROR;
+}
 
-    status = appendCRCBytes();
-    if(status != Status::COMPLETED)
-        return status;
-
-    readBufferPosition = TRANSACTION_FRAME_OVERHEAD + registerCount;
-    readDataBufferPosition = registerCount;
-
-    //status = execute();
-    if(status != Status::COMPLETED)
-        return status;
-
-    // TODO actual read: write data bytes in data buffer readByte/Word/Data function
-
-    return Status::COMPLETED;
-}*/
+Status DaisyChain::broadcastWriteReverse(WriteRegister startRegister, uint8_t *data, uint8_t dataSize) {
+    return ERROR;
+}
