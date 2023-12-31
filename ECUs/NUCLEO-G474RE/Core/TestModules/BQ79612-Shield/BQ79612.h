@@ -101,8 +101,8 @@ namespace BQ79612 {
         uint8_t writeDataBufferPosition = 0;
         uint8_t readDataBufferPosition = 0;
 
-        uint8_t  cf_dataLength = 0;
-        uint8_t  rf_dataLength = 0;
+        uint8_t cf_dataLength = 0;
+        uint8_t rf_dataLength = 0;
         uint8_t receiveBufferSize = 0;
         uint8_t receiveDataBufferSize = 0;
 
