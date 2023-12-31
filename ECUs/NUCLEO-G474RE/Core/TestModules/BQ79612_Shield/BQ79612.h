@@ -39,26 +39,47 @@ namespace BQ79612 {
     };
 
     enum Ping_us : uint16_t {
-
+        WAKE = 2250,
+        SHUTDOWN = 8500,
+        SLEEP_TO_ACTIVE = 275,
+        HARDWARE_RESET = 36
     };
 
+    // TODO find better and hierachical structure -> sth like Readregister > readonly and readwrite > register > register bits
     enum ReadRegister : uint16_t {
-
+        OTP_ECC_TEST_R = 0x034C,
+        Control1_R = 0x0309,
+        DIR0_ADDR_R = 0x0306,
+        COMM_CTRL_R = 0x0308
     };
-
     enum WriteRegister : uint16_t {
-
+        OTP_ECC_TEST_W = 0x034C,
+        Control1_W = 0x0309,
+        DIR0_ADDR_W = 0x0306,
+        COMM_CTRL_W = 0x0308
     };
 
     enum Control1 : uint8_t {
-        DIR_SEL = 0b1 << 7,
-        SEND_SHUTDOWN = 0b1 << 6,
-        SEND_WAKE = 0b1 << 5,
-        SEND_SLPTOACT = 0b1 << 4,
-        GOTO_SHUTDOWN = 0b1 << 3,
-        GOTO_SLEEP = 0b1 << 2,
-        SOFT_RESET = 0b1 << 1,
-        ADDR_WR = 0b1
+        DIR_SEL = 1 << 7,
+        SEND_SHUTDOWN = 1 << 6,
+        SEND_WAKE = 1 << 5,
+        SEND_SLPTOACT = 1 << 4,
+        GOTO_SHUTDOWN = 1 << 3,
+        GOTO_SLEEP = 1 << 2,
+        SOFT_RESET = 1 << 1,
+        ADDR_WR = 1
+    };
+
+    enum OTP_ECC_Test : uint8_t {
+        DED_SEC = 1 << 3,
+        MANUAL_AUTO = 1 << 2,
+        ENC_DEC = 1 << 1,
+        ENABLE = 1,
+    };
+
+    enum COMM_CTRL : uint8_t {
+        STACK_DEV = 1 << 1,
+        TOP_STACK = 1
     };
 
     enum Status : uint8_t {
@@ -77,6 +98,8 @@ namespace BQ79612 {
         void init();
 
         Status ping(Ping_us time_us);
+
+        Status readData(uint8_t *value);
 
         Status readSingleDevice(uint8_t devAddress, ReadRegister startRegister, uint8_t registerCount);
 
