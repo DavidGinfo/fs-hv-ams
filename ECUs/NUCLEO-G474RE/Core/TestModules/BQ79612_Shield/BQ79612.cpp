@@ -219,8 +219,8 @@ Status DaisyChain::execute(const TransactionContent command[], uint8_t responseF
     return Status::ERROR;
 }
 
-DaisyChain::DaisyChain(UART_HandleTypeDef &uartHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx)
-    : uartHandle(&uartHandle), deviceCount(deviceCount), UART_TX(uart_tx), UART_RX(uart_rx) {
+DaisyChain::DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx)
+    : uartHandle(&uartHandle), timHandle(&timHandle), deviceCount(deviceCount), UART_TX(uart_tx), UART_RX(uart_rx) {
 }
 
 void DaisyChain::init() {
@@ -237,9 +237,9 @@ Status DaisyChain::ping(Ping_us time_us) {
         return Status::ERROR;
 
     UART_TX.write(0);
-    HAL_TIM_Base_Start(&htim16);
-    uint16_t startTime = __HAL_TIM_GET_COUNTER(&htim16);
-    while(__HAL_TIM_GET_COUNTER(&htim16) - startTime >= time_us);
+    HAL_TIM_Base_Start(timHandle);
+    uint16_t startTime = __HAL_TIM_GET_COUNTER(timHandle);
+    while(__HAL_TIM_GET_COUNTER(timHandle) - startTime >= time_us);
     UART_TX.write(1);
 
     HAL_GPIO_DeInit(UART_TX.getPort(), UART_TX.getPin());

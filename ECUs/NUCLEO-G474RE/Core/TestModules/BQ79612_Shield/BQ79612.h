@@ -6,8 +6,6 @@
 #include <IO/GPIO/Pin.h>
 #include "main.h"
 
-extern TIM_HandleTypeDef htim16;
-
 namespace BQ79612 {
 
     const uint8_t TRANSACTION_FRAME_OVERHEAD = 6;
@@ -18,9 +16,9 @@ namespace BQ79612 {
     const uint8_t TEST_DEVICE_COUNT = 3;
     //those constants are only valid for testing with the shield (max length of a transaction frame multiplied by the devices of the chain(3 with base device)
     //more generic constants would use huge space in ram (need a better idea for that)
-    const uint8_t BUFFER_SIZE = TEST_DEVICE_COUNT * MAX_LENGTH_TRANSACTION_FRAME;
-    const uint8_t DATA_BUFFER_SIZE = TEST_DEVICE_COUNT * MAX_DATA_SIZE_RESPONSE_FRAME;
-    Parallel::TimeMS HOST_UART_TIMEOUT = 10;
+    const uint8_t BUFFER_SIZE = static_cast<uint8_t>(TEST_DEVICE_COUNT * MAX_LENGTH_TRANSACTION_FRAME);
+    const uint8_t DATA_BUFFER_SIZE = static_cast<uint8_t>(TEST_DEVICE_COUNT * MAX_DATA_SIZE_RESPONSE_FRAME);
+    inline constexpr Parallel::TimeMS HOST_UART_TIMEOUT = 10;
 
     enum TransactionContent {
         TC_INIT,
@@ -70,7 +68,7 @@ namespace BQ79612 {
 
     class DaisyChain{
       public:
-        explicit DaisyChain(UART_HandleTypeDef &uartHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
+        explicit DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
 
         DaisyChain(DaisyChain &) = delete;
 
@@ -96,6 +94,7 @@ namespace BQ79612 {
 
       private:
         UART_HandleTypeDef *uartHandle;
+        TIM_HandleTypeDef *timHandle;
         GPIO::Pin UART_TX;
         GPIO::Pin UART_RX;
         uint8_t deviceCount = 0;
