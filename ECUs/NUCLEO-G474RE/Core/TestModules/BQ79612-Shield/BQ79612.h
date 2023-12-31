@@ -52,6 +52,17 @@ namespace BQ79612 {
 
     };
 
+    enum Control1 : uint8_t {
+        DIR_SEL = 0b1 << 7,
+        SEND_SHUTDOWN = 0b1 << 6,
+        SEND_WAKE = 0b1 << 5,
+        SEND_SLPTOACT = 0b1 << 4,
+        GOTO_SHUTDOWN = 0b1 << 3,
+        GOTO_SLEEP = 0b1 << 2,
+        SOFT_RESET = 0b1 << 1,
+        ADDR_WR = 0b1
+    };
+
     enum Status : uint8_t {
         ERROR = 0,
         COMPLETED = 1
@@ -81,7 +92,7 @@ namespace BQ79612 {
 
         Status broadcastWrite(WriteRegister startRegister, uint8_t *data, uint8_t dataSize);
 
-        Status broadcastWriteReverse(WriteRegister startRegister, uint8_t *data, uint8_t dataSize);
+        Status broadcastWriteReverse(WriteRegister startRegister);
 
       private:
         UART_HandleTypeDef *uartHandle;
@@ -130,11 +141,12 @@ namespace BQ79612 {
         Status readDataBufferByte(uint8_t *value);
         Status writeDataBufferByte(uint8_t value);
 
-        Status getCommandInit(ReqType requestType, uint8_t dataSize, uint8_t *value);
-
         Status readResponseFrames(uint8_t responseFrameCount);
         Status writeCommandFrame(const TransactionContent command[]);
 
+        Status getCommandInit(ReqType requestType, uint8_t dataSize, uint8_t *value);
         Status execute(const TransactionContent command[], uint8_t responseFrameCount);
+
+        Status assignTransactionParamters();
     };
 }
