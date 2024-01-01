@@ -50,7 +50,8 @@ namespace BQ79612 {
         OTP_ECC_TEST_R = 0x034C,
         Control1_R = 0x0309,
         DIR0_ADDR_R = 0x0306,
-        COMM_CTRL_R = 0x0308
+        COMM_CTRL_R = 0x0308,
+        PART_ID = 0x0500
     };
     enum WriteRegister : uint16_t {
         OTP_ECC_TEST_W = 0x034C,
