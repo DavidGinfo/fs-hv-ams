@@ -35,13 +35,13 @@ bool performAutoaddressing(){
 
     // send dummy data to sync delay-locked loop
     data |= ~OTP_ECC_Test::DED_SEC | ~OTP_ECC_Test::MANUAL_AUTO | ~OTP_ECC_Test::ENC_DEC | ~OTP_ECC_Test::ENABLE;
-    if(ams.broadcastWrite(OTP_ECC_TEST_W, &data, 1) != Status::COMPLETED)
+    if(ams.broadcastWrite(WriteRegister::OTP_ECC_TEST_W, &data, 1) != Status::COMPLETED)
         return false;
     data = 0;
 
     // enable autoadressing on all devices
     data |= Control1::ADDR_WR;
-    if(ams.broadcastWrite(Control1_W, &data, 1) != Status::COMPLETED)
+    if(ams.broadcastWrite(WriteRegister::Control1_W, &data, 1) != Status::COMPLETED)
         return false;
 
     data = 0;
@@ -49,35 +49,35 @@ bool performAutoaddressing(){
     // distribute addresses to all the devices
     for(int i = 0; i < devices; i++){
         data = i;
-        if(ams.broadcastWrite(DIR0_ADDR_W, &data, 1) != Status::COMPLETED)
+        if(ams.broadcastWrite(WriteRegister::DIR0_ADDR_W, &data, 1) != Status::COMPLETED)
             return false;
     }
     data = 0;
 
     // set all devices to stack devices
     data |= COMM_CTRL::STACK_DEV | ~COMM_CTRL::TOP_STACK;
-    if(ams.broadcastWrite(COMM_CTRL_W, &data, 1) != Status::COMPLETED)
+    if(ams.broadcastWrite(WriteRegister::COMM_CTRL_W, &data, 1) != Status::COMPLETED)
         return false;
     data = 0;
 
     // revoke stack device setting for base device
     data |= ~COMM_CTRL::STACK_DEV | ~COMM_CTRL::TOP_STACK;
-    if(ams.writeSingleDevice(0x00, COMM_CTRL_W, &data, 1) != Status::COMPLETED)
+    if(ams.writeSingleDevice(0x00, WriteRegister::COMM_CTRL_W, &data, 1) != Status::COMPLETED)
         return false;
     data = 0;
 
     // set up top of stack device
     data |= COMM_CTRL::STACK_DEV | COMM_CTRL::TOP_STACK;
-    if(ams.writeSingleDevice(0x02, COMM_CTRL_W, &data, 1) != Status::COMPLETED)
+    if(ams.writeSingleDevice(0x02, WriteRegister::COMM_CTRL_W, &data, 1) != Status::COMPLETED)
         return false;
     data = 0;
 
     // read dummy data to sync delay-locked loop
-    if(ams.broadcastRead(OTP_ECC_TEST_R, 1) != Status::COMPLETED)
+    if(ams.broadcastRead(ReadRegister::OTP_ECC_TEST_R, 1) != Status::COMPLETED)
         return false;
 
     // read back device addresses of all devices
-    if(ams.broadcastRead(DIR0_ADDR_R, 1) != Status::COMPLETED)
+    if(ams.broadcastRead(ReadRegister::DIR0_ADDR_R, 1) != Status::COMPLETED)
         return false;
 
     for(int i = 0; i < devices; i++){
@@ -88,9 +88,16 @@ bool performAutoaddressing(){
     return true;
 }
 
-// TODO implement a simple read reg function for testing if that is possible without autoadressing
-bool readBaseDeviceRegister(){
+bool readBaseDeviceID(){
+    uint8_t data;
+    uint8_t aexpectedBaseDeviceAddress = 0x01; // factory default config, if this will not work try 0x00 which is the HW reset default address
+    if(ams.readSingleDevice(aexpectedBaseDeviceAddress, ReadRegister::PART_ID, 1) != Status::COMPLETED)
+        return false;
 
+    ams.readData(&data);
+    Terminal::printf("0x0%d\r\n", data); // should be 0x02 for the BQ79612
+
+    return true;
 }
 
 void runAMS_Shield(){
@@ -99,8 +106,11 @@ void runAMS_Shield(){
 
     sendWakePing();
 
+    if(readBaseDeviceID())
+        Terminal::printf("Looks like reading registers of the base device works!");
+
     if(performAutoaddressing())
-        Terminal::printf("Looks like it worked!");
+        Terminal::printf("Looks like autoadressing worked!");
 
     for(;;){
 
