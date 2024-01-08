@@ -109,15 +109,14 @@ void runAMS_Shield(){
     if(readBaseDeviceID())
         Terminal::printf("Looks like reading registers of the base device works!");
 
-    if(performAutoaddressing())
-        Terminal::printf("Looks like autoadressing worked!");
+//    if(performAutoaddressing())
+//        Terminal::printf("Looks like autoadressing worked!");
 
     for(;;){
-
+        Parallel::delay(100);
     }
 }
 
 void initAMS_Shield(){
-    uint8_t a = 0;
     amsShieldTask.init();
 }
