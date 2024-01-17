@@ -29,6 +29,11 @@ void sendWakePing(){
     Parallel::delay(15);
 }
 
+void sendShutdownPing(){
+    // send wake ping to change device mode from sleep to active
+    ams.ping(Ping_us::SHUTDOWN);
+}
+
 bool performAutoaddressing(){
     uint8_t data = 0;
     uint8_t dataBuffer[3] = {};
@@ -90,12 +95,12 @@ bool performAutoaddressing(){
 
 bool readBaseDeviceID(){
     uint8_t data;
-    uint8_t aexpectedBaseDeviceAddress = 0x01; // factory default config, if this will not work try 0x00 which is the HW reset default address
-    if(ams.readSingleDevice(aexpectedBaseDeviceAddress, ReadRegister::PART_ID, 1) != Status::COMPLETED)
+    uint8_t expectedBaseDeviceAddress = 0x00; // factory default config, if this will not work try 0x00 which is the HW reset default address
+    if(ams.readSingleDevice(expectedBaseDeviceAddress,
+                             ReadRegister::PART_ID, 1) != Status::COMPLETED)
         return false;
 
     ams.readData(&data);
-    Terminal::printf("0x0%d\r\n", data); // should be 0x02 for the BQ79612
 
     return true;
 }
@@ -106,14 +111,18 @@ void runAMS_Shield(){
 
     sendWakePing();
 
-    if(readBaseDeviceID())
-        Terminal::printf("Looks like reading registers of the base device works!");
+    readBaseDeviceID();
 
-//    if(performAutoaddressing())
-//        Terminal::printf("Looks like autoadressing worked!");
+    sendShutdownPing();
+
+    sendWakePing();
+
+    sendShutdownPing();
+
+
 
     for(;;){
-        Parallel::delay(100);
+        Parallel::delay(10);
     }
 }
 

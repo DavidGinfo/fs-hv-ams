@@ -42,17 +42,38 @@ namespace BQ79612 {
         WAKE = 2250,
         SHUTDOWN = 8500,
         SLEEP_TO_ACTIVE = 275,
-        HARDWARE_RESET = 36
+        HARDWARE_RESET = 36000
     };
 
-    // TODO find better and hierachical structure -> sth like Readregister > readonly and readwrite > register > register bits
+    // TODO implement
+    enum ReadWriteRegister : uint16_t {
+
+    };
+
+    enum ReadOnlyRegister : uint16_t {
+
+    };
+
+    enum OTPRegister : uint16_t {
+
+    };
+
+    enum DeviceAddress : uint8_t {
+        BASE_DEVICE = 0x00,
+        STACK_DEVICE1 = 0x01,
+        STACK_DEVICE64 = 0x3F,
+        MULTIPLE_DEVICES = 0xFF
+    };
+
     enum ReadRegister : uint16_t {
         OTP_ECC_TEST_R = 0x034C,
         Control1_R = 0x0309,
         DIR0_ADDR_R = 0x0306,
         COMM_CTRL_R = 0x0308,
-        PART_ID = 0x0500
+        PART_ID = 0x0500,
+        FAULT_SUMMERY = 0x052D
     };
+
     enum WriteRegister : uint16_t {
         OTP_ECC_TEST_W = 0x034C,
         Control1_W = 0x0309,
@@ -83,6 +104,7 @@ namespace BQ79612 {
         TOP_STACK = 1
     };
 
+    // TODO assign proper status codes
     enum Status : uint8_t {
         ERROR = 0,
         COMPLETED = 1
@@ -98,6 +120,7 @@ namespace BQ79612 {
 
         void init();
 
+        // TODO outsource generic abstraction for hw timer functionality to library
         Status ping(Ping_us time_us);
 
         Status readData(uint8_t *value);
@@ -115,6 +138,14 @@ namespace BQ79612 {
         Status broadcastWrite(WriteRegister startRegister, uint8_t *data, uint8_t dataSize);
 
         Status broadcastWriteReverse(WriteRegister startRegister);
+
+        // TODO implement
+        // perhaps better implementation
+        Status read(ReqType commandType, DeviceAddress devAddress, ReadWriteRegister startRegister, uint8_t registerCount);
+        Status read(ReqType commandType, DeviceAddress devAddress, ReadOnlyRegister startRegister, uint8_t registerCount);
+        Status write(ReqType commandType, DeviceAddress devAddress, ReadWriteRegister startRegister, uint8_t *data, uint8_t dataLength);
+        Status write(ReqType commandType, DeviceAddress devAddress, OTPRegister startRegister, uint8_t *data, uint8_t dataLength);
+        Status getFault();
 
       private:
         UART_HandleTypeDef *uartHandle;
@@ -169,7 +200,5 @@ namespace BQ79612 {
 
         Status getCommandInit(ReqType requestType, uint8_t dataSize, uint8_t *value);
         Status execute(const TransactionContent command[], uint8_t responseFrameCount);
-
-        Status assignTransactionParamters();
     };
 }
