@@ -234,13 +234,13 @@ Status DaisyChain::ping(Ping_us time_us) {
     HAL_GPIO_Init(UART_TX.getPort(), &UART_TX_GPIO_InitStruct);
 
     if(UART_TX.read() != 1)
-        return Status::ERROR;
+        UART_TX.write(GPIO_PinState::GPIO_PIN_SET);
 
-    UART_TX.write(0);
+    UART_TX.write(GPIO_PinState::GPIO_PIN_RESET);
     HAL_TIM_Base_Start(timHandle);
     uint16_t startTime = __HAL_TIM_GET_COUNTER(timHandle);
-    while(__HAL_TIM_GET_COUNTER(timHandle) - startTime >= time_us);
-    UART_TX.write(1);
+    while(__HAL_TIM_GET_COUNTER(timHandle) - startTime <= time_us);
+    UART_TX.write(GPIO_PinState::GPIO_PIN_SET);
 
     HAL_GPIO_DeInit(UART_TX.getPort(), UART_TX.getPin());
 
@@ -270,7 +270,7 @@ Status DaisyChain::readSingleDevice(uint8_t devAddress, ReadRegister startRegist
     cf_devAdr = devAddress;
     cf_regAdr = startRegister;
 
-    writeDataBufferByte(registerCount);
+    writeDataBufferByte(registerCount - 1);
 
     status = execute(SINGLE_DEVICE_COMMAND_FRAME, 1);
 
@@ -315,7 +315,7 @@ Status DaisyChain::readStack(ReadRegister startRegister, uint8_t registerCount) 
 
     cf_regAdr = startRegister;
 
-    writeDataBufferByte(registerCount);
+    writeDataBufferByte(registerCount - 1);
 
     status = execute(MULTI_DEVICE_COMMAND_FRAME, this->deviceCount - 1);
 
@@ -356,7 +356,7 @@ Status DaisyChain::broadcastRead(ReadRegister startRegister, uint8_t registerCou
 
     cf_regAdr = startRegister;
 
-    writeDataBufferByte(registerCount);
+    writeDataBufferByte(registerCount - 1);
 
     status = execute(MULTI_DEVICE_COMMAND_FRAME, this->deviceCount);
 
