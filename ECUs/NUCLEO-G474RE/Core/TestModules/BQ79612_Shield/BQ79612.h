@@ -5,6 +5,8 @@
 #include <parallel/Delay.h>
 #include <IO/GPIO/Pin.h>
 #include "main.h"
+#include "BQ79612_Comm_Data.h"
+#include "BQ79612_Register_Data.h"
 
 namespace BQ79612 {
 
@@ -19,96 +21,6 @@ namespace BQ79612 {
     const uint8_t BUFFER_SIZE = static_cast<uint8_t>(TEST_DEVICE_COUNT * MAX_LENGTH_TRANSACTION_FRAME);
     const uint8_t DATA_BUFFER_SIZE = static_cast<uint8_t>(TEST_DEVICE_COUNT * MAX_DATA_SIZE_RESPONSE_FRAME);
     inline constexpr Parallel::TimeMS HOST_UART_TIMEOUT = 10;
-
-    enum TransactionContent {
-        TC_INIT,
-        TC_DEV_ADR,
-        TC_REG_ADR,
-        TC_DATA,
-        TC_CRC
-    };
-
-    enum ReqType : uint8_t {
-        SINGLE_DEVICE_READ = 0,
-        SINGLE_DEVICE_WRITE = 1,
-        STACK_READ = 2,
-        STACK_WRITE = 3,
-        BROADCAST_READ = 4,
-        BROADCAST_WRITE = 5,
-        BROADCAST_WRITE_REVERSE = 6,
-    };
-
-    enum Ping_us : uint16_t {
-        WAKE = 2250,
-        SHUTDOWN = 8500,
-        SLEEP_TO_ACTIVE = 275,
-        HARDWARE_RESET = 36000
-    };
-
-    // TODO implement
-    enum ReadWriteRegister : uint16_t {
-
-    };
-
-    enum ReadOnlyRegister : uint16_t {
-
-    };
-
-    enum OTPRegister : uint16_t {
-
-    };
-
-    enum DeviceAddress : uint8_t {
-        BASE_DEVICE = 0x00,
-        STACK_DEVICE1 = 0x01,
-        STACK_DEVICE64 = 0x3F,
-        MULTIPLE_DEVICES = 0xFF
-    };
-
-    enum ReadRegister : uint16_t {
-        OTP_ECC_TEST_R = 0x034C,
-        Control1_R = 0x0309,
-        DIR0_ADDR_R = 0x0306,
-        COMM_CTRL_R = 0x0308,
-        PART_ID = 0x0500,
-        FAULT_SUMMERY = 0x052D
-    };
-
-    enum WriteRegister : uint16_t {
-        OTP_ECC_TEST_W = 0x034C,
-        Control1_W = 0x0309,
-        DIR0_ADDR_W = 0x0306,
-        COMM_CTRL_W = 0x0308
-    };
-
-    enum Control1 : uint8_t {
-        DIR_SEL = 1 << 7,
-        SEND_SHUTDOWN = 1 << 6,
-        SEND_WAKE = 1 << 5,
-        SEND_SLPTOACT = 1 << 4,
-        GOTO_SHUTDOWN = 1 << 3,
-        GOTO_SLEEP = 1 << 2,
-        SOFT_RESET = 1 << 1,
-        ADDR_WR = 1
-    };
-
-    enum OTP_ECC_Test : uint8_t {
-        DED_SEC = 1 << 3,
-        MANUAL_AUTO = 1 << 2,
-        ENC_DEC = 1 << 1,
-        ENABLE = 1,
-    };
-
-    enum COMM_CTRL : uint8_t {
-        STACK_DEV = 1 << 1,
-        TOP_STACK = 1
-    };
-
-    // TODO assign proper status codes
-    enum Status : uint8_t {
-        ERROR = 0,
-        COMPLETED = 1
-    };
 
     class DaisyChain{
       public:
@@ -140,12 +52,21 @@ namespace BQ79612 {
         Status broadcastWriteReverse(WriteRegister startRegister);
 
         // TODO implement
-        // perhaps better implementation
-        Status read(ReqType commandType, DeviceAddress devAddress, ReadWriteRegister startRegister, uint8_t registerCount);
-        Status read(ReqType commandType, DeviceAddress devAddress, ReadOnlyRegister startRegister, uint8_t registerCount);
-        Status write(ReqType commandType, DeviceAddress devAddress, ReadWriteRegister startRegister, uint8_t *data, uint8_t dataLength);
-        Status write(ReqType commandType, DeviceAddress devAddress, OTPRegister startRegister, uint8_t *data, uint8_t dataLength);
-        Status getFault();
+        // perhaps better implementation for low level functionality
+        Status read(ReadReqType readCommandType, DeviceAddress devAddress, ReadWriteRegister startRegister, uint8_t registerCount);
+        Status read(ReadReqType readCommandType, DeviceAddress devAddress, ReadOnlyRegister startRegister, uint8_t registerCount);
+        Status write(WriteReqType writeCommandType, DeviceAddress devAddress, ReadWriteRegister startRegister, uint8_t *data, uint8_t dataLength);
+        Status write(WriteReqType writeCommandType, DeviceAddress devAddress, OTPRegister startRegister, uint8_t *data, uint8_t dataLength);
+
+        // TODO implement
+        // upper level funcionality
+        Status getFaults();
+        Status performAutoadressing();
+
+        // TODO implement
+        // top level functionality
+        Status readCellVoltage();
+        Status readCellTemperature();
 
       private:
         UART_HandleTypeDef *uartHandle;
