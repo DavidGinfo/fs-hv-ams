@@ -208,7 +208,6 @@ Status DaisyChain::execute(const TransactionContent command[], uint8_t responseF
     resetData();
 
     writeCommandFrame(command);
-
     if(HAL_UART_Transmit(uartHandle, buffer, writeBufferPosition, HOST_UART_TIMEOUT) != HAL_OK)
         return Status::ERROR;
     if(HAL_UART_Receive(uartHandle, buffer, receiveBufferSize, HOST_UART_TIMEOUT) != HAL_OK)
