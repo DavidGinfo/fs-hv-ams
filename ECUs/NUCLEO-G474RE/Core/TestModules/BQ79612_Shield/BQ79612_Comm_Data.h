@@ -31,7 +31,7 @@ namespace BQ79612 {
         HARDWARE_RESET = 36000
     };
 
-    enum DeviceAddress : uint8_t {
+    enum Device : uint8_t {
         BASE_DEVICE = 0,
         STACK_DEVICE1 = 1,
         STACK_DEVICE2 = 2,
