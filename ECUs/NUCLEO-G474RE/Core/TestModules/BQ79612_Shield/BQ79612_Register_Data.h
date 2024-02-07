@@ -1,7 +1,5 @@
 #pragma once
 
-#include <util/Common.h>
-
 namespace BQ79612 {
     enum ReadWriteRegister : uint16_t {
         OTP_ECC_TEST = 0x034C,
