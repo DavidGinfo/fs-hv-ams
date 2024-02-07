@@ -16,8 +16,6 @@ namespace BQ79612 {
     const uint8_t MAX_LENGTH_TRANSACTION_FRAME = MAX_DATA_SIZE_RESPONSE_FRAME + TRANSACTION_FRAME_OVERHEAD;
     const uint8_t MAX_DEVICE_COUNT = 64;
     const uint8_t TEST_DEVICE_COUNT = 3;
-    //those constants are only valid for testing with the shield (max length of a transaction frame multiplied by the devices of the chain(3 with base device)
-    //more generic constants would use huge space in ram (need a better idea for that)
     const uint8_t BUFFER_SIZE = static_cast<uint8_t>(TEST_DEVICE_COUNT * MAX_LENGTH_TRANSACTION_FRAME);
     const uint8_t DATA_BUFFER_SIZE = static_cast<uint8_t>(TEST_DEVICE_COUNT * MAX_DATA_SIZE_RESPONSE_FRAME);
     inline constexpr Parallel::TimeMS HOST_UART_TIMEOUT = 10;
@@ -33,14 +31,15 @@ namespace BQ79612 {
         void init();
 
         // TODO outsource generic abstraction for hw timer functionality to library
+        // TODO implement clean solution for exact delay in us (with rtos and HW timer in combination), commit tim handle via constructor
         Status ping(Ping_us time_us);
 
-        Status readDataBuffer(uint8_t *value);
-
-        Status read(ReqType readCommandType, Device device, ReadWriteRegister startRegister, uint8_t registerCount);
-        Status read(ReqType readCommandType, Device device, ReadOnlyRegister startRegister, uint8_t registerCount);
         Status write(ReqType writeCommandType, Device device, ReadWriteRegister startRegister, uint8_t *data, uint8_t dataLength);
         Status write(ReqType writeCommandType, Device device, OTPRegister startRegister, uint8_t *data, uint8_t dataLength);
+        Status read(ReqType readCommandType, Device device, ReadWriteRegister startRegister, uint8_t registerCount);
+        Status read(ReqType readCommandType, Device device, ReadOnlyRegister startRegister, uint8_t registerCount);
+
+        Status readDataBuffer(uint8_t *value);
 
         // TODO implement
         // upper level funcionality
@@ -92,22 +91,21 @@ namespace BQ79612 {
 
         void resetData();
 
-        Status readBufferByte(uint8_t *value);
         Status writeBufferByte(uint8_t value);
-
-        Status readBufferWord(uint16_t *value);
+        Status readBufferByte(uint8_t *value);
         Status writeBufferWord(uint16_t value);
-
-        Status readDataBufferByte(uint8_t *value);
+        Status readBufferWord(uint16_t *value);
         Status writeDataBufferByte(uint8_t value);
+        Status readDataBufferByte(uint8_t *value);
 
-        Status readResponseFrames(uint8_t responseFrameCount);
         Status writeCommandFrame(const TransactionContent command[]);
+        Status readResponseFrames(uint8_t responseFrameCount);
 
         Status getCommandInit(ReqType requestType, uint8_t dataSize, uint8_t *value);
+
         Status execute(const TransactionContent command[], uint8_t responseFrameCount);
 
-        Status readRegisters(ReqType readCommandType, Device device, uint16_t startRegister, uint8_t registerCount);
         Status writeRegisters(ReqType writeCommandType, Device device, uint16_t startRegister, uint8_t *data, uint8_t dataLength);
+        Status readRegisters(ReqType readCommandType, Device device, uint16_t startRegister, uint8_t registerCount);
     };
 }

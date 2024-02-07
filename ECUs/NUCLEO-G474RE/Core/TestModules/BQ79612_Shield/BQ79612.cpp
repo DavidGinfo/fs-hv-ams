@@ -40,6 +40,16 @@ void DaisyChain::resetData() {
     readDataBufferPosition = 0;
 }
 
+Status DaisyChain::writeBufferByte(uint8_t value) {
+    if(writeBufferPosition >= BUFFER_SIZE - 1)
+        return Status::ERROR;
+
+    buffer[writeBufferPosition++] = static_cast<uint8_t>(value);
+    checksum.update(value);
+
+    return Status::COMPLETED;
+}
+
 Status DaisyChain::readBufferByte(uint8_t *value) {
     if(readBufferPosition >= receiveBufferSize + 1)
         return Status::ERROR;
@@ -50,12 +60,14 @@ Status DaisyChain::readBufferByte(uint8_t *value) {
     return Status::COMPLETED;
 }
 
-Status DaisyChain::writeBufferByte(uint8_t value) {
-    if(writeBufferPosition >= BUFFER_SIZE - 1)
-        return Status::ERROR;
+Status DaisyChain::writeBufferWord(uint16_t value) {
+    Status status = writeBufferByte(value >> 8);
+    if(status != Status::COMPLETED)
+        return status;
 
-    buffer[writeBufferPosition++] = static_cast<uint8_t>(value);
-    checksum.update(value);
+    status = writeBufferByte(value & 0xFF);
+    if(status != Status::COMPLETED)
+        return status;
 
     return Status::COMPLETED;
 }
@@ -77,14 +89,11 @@ Status DaisyChain::readBufferWord(uint16_t *value) {
     return Status::COMPLETED;
 }
 
-Status DaisyChain::writeBufferWord(uint16_t value) {
-    Status status = writeBufferByte(value >> 8);
-    if(status != Status::COMPLETED)
-        return status;
+Status DaisyChain::writeDataBufferByte(uint8_t value) {
+    if(writeDataBufferPosition >= DATA_BUFFER_SIZE)
+        return Status::ERROR;
 
-    status = writeBufferByte(value & 0xFF);
-    if(status != Status::COMPLETED)
-        return status;
+    dataBuffer[writeBufferPosition++] = value;
 
     return Status::COMPLETED;
 }
@@ -98,13 +107,48 @@ Status DaisyChain::readDataBufferByte(uint8_t *value) {
     return Status::COMPLETED;
 }
 
-Status DaisyChain::writeDataBufferByte(uint8_t value) {
-    if(writeDataBufferPosition >= DATA_BUFFER_SIZE)
-        return Status::ERROR;
+Status DaisyChain::writeCommandFrame(const TransactionContent command[]) {
+    Status status = Status::COMPLETED;
+    bool endFlag = false;
 
-    dataBuffer[writeBufferPosition++] = value;
+    for(uint8_t i = 0; !endFlag; i++){
+        switch(command[i]){
+            case TransactionContent::TC_INIT:
+                status = writeBufferByte(cf_init);
+                if(status != Status::COMPLETED)
+                    return status;
+                break;
 
-    return Status::COMPLETED;
+            case TransactionContent::TC_DEV_ADR:
+                status = writeBufferByte(cf_devAdr);
+                if(status != Status::COMPLETED)
+                    return status;
+                break;
+
+            case TransactionContent::TC_REG_ADR:
+                status = writeBufferWord(cf_regAdr);
+                if(status != Status::COMPLETED)
+                    return status;
+                break;
+
+            case TransactionContent::TC_DATA:
+                for(uint8_t j = 0; j < cf_dataLength; j++){
+                    status = writeBufferByte(dataBuffer[j]);
+                    if(status != Status::COMPLETED)
+                        return status;
+                }
+                break;
+
+            case TransactionContent::TC_CRC:
+                endFlag = true;
+                cf_crc = swap(checksum.get());
+                status = writeBufferWord(cf_crc);
+                if(status != Status::COMPLETED)
+                    return status;
+        }
+    }
+
+    return status;
 }
 
 Status DaisyChain::readResponseFrames(uint8_t responseFrameCount) {
@@ -159,50 +203,6 @@ Status DaisyChain::readResponseFrames(uint8_t responseFrameCount) {
     return status;
 }
 
-Status DaisyChain::writeCommandFrame(const TransactionContent command[]) {
-    Status status = Status::COMPLETED;
-    bool endFlag = false;
-
-    for(uint8_t i = 0; !endFlag; i++){
-        switch(command[i]){
-            case TransactionContent::TC_INIT:
-                status = writeBufferByte(cf_init);
-                if(status != Status::COMPLETED)
-                    return status;
-                break;
-
-            case TransactionContent::TC_DEV_ADR:
-                status = writeBufferByte(cf_devAdr);
-                if(status != Status::COMPLETED)
-                    return status;
-                break;
-
-            case TransactionContent::TC_REG_ADR:
-                status = writeBufferWord(cf_regAdr);
-                if(status != Status::COMPLETED)
-                    return status;
-                break;
-
-            case TransactionContent::TC_DATA:
-                for(uint8_t j = 0; j < cf_dataLength; j++){
-                    status = writeBufferByte(dataBuffer[j]);
-                    if(status != Status::COMPLETED)
-                        return status;
-                }
-                break;
-
-            case TransactionContent::TC_CRC:
-                endFlag = true;
-                cf_crc = swap(checksum.get());
-                status = writeBufferWord(cf_crc);
-                if(status != Status::COMPLETED)
-                    return status;
-        }
-    }
-
-    return status;
-}
-
 Status DaisyChain::getCommandInit(ReqType requestType, uint8_t dataSize, uint8_t *value) {
     if(dataSize > 8 || dataSize == 0)
         return Status::ERROR;
@@ -228,90 +228,6 @@ Status DaisyChain::execute(const TransactionContent command[], uint8_t responseF
     }
 
     return Status::ERROR;
-}
-
-DaisyChain::DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx)
-    : uartHandle(&uartHandle), timHandle(&timHandle), deviceCount(deviceCount), UART_TX(uart_tx), UART_RX(uart_rx) {
-}
-
-void DaisyChain::init() {
-    init_UART_TX_GPIO();
-}
-
-// implement clean solution for exact delay in us (with rtos and HW timer in combination), commit tim handle via constructor
-Status DaisyChain::ping(Ping_us time_us) {
-    HAL_UART_DeInit(uartHandle);
-
-    HAL_GPIO_Init(UART_TX.getPort(), &UART_TX_GPIO_InitStruct);
-
-    if(UART_TX.read() != 1)
-        UART_TX.write(GPIO_PinState::GPIO_PIN_SET);
-
-    UART_TX.write(GPIO_PinState::GPIO_PIN_RESET);
-    HAL_TIM_Base_Start(timHandle);
-    uint16_t startTime = __HAL_TIM_GET_COUNTER(timHandle);
-    while(__HAL_TIM_GET_COUNTER(timHandle) - startTime <= time_us);
-    UART_TX.write(GPIO_PinState::GPIO_PIN_SET);
-
-    HAL_GPIO_DeInit(UART_TX.getPort(), UART_TX.getPin());
-
-    HAL_UART_Init(uartHandle);
-
-    return Status::COMPLETED;
-}
-
-Status DaisyChain::readDataBuffer(uint8_t *value) {
-    return readDataBufferByte(value);
-}
-
-Status DaisyChain::readRegisters(ReqType readCommandType, Device device, uint16_t startRegister, uint8_t registerCount) {
-    Status status = getCommandInit(readCommandType, 1, &cf_init);
-    if(status != Status::COMPLETED){
-        return status;
-    }
-
-    cf_dataLength = 1;
-    rf_dataLength = registerCount;
-    cf_regAdr = startRegister;
-    writeDataBufferByte(registerCount - 1);
-
-    if(readCommandType == ReqType::SINGLE_DEVICE_READ){
-        if(device == Device::MULTIPLE_DEVICES){
-            status = Status::ERROR;
-            return status;
-        }
-        if(device >= deviceCount){
-            status = Status::ERROR;
-            return status;
-        }
-
-        receiveBufferSize = rf_dataLength + TRANSACTION_FRAME_OVERHEAD;
-        receiveDataBufferSize = rf_dataLength;
-        cf_devAdr = device;
-
-        status = execute(SINGLE_DEVICE_COMMAND_FRAME, 1);
-    }else{
-        if(device != Device::MULTIPLE_DEVICES){
-            status = Status::ERROR;
-            return status;
-        }
-
-        if(readCommandType == ReqType::STACK_READ){
-            receiveBufferSize = (rf_dataLength + TRANSACTION_FRAME_OVERHEAD) * (this->deviceCount - 1);
-            receiveDataBufferSize = rf_dataLength * (this->deviceCount - 1);
-
-            status = execute(MULTI_DEVICE_COMMAND_FRAME, this->deviceCount - 1);
-        }else if(readCommandType == ReqType::BROADCAST_READ){
-            receiveBufferSize = (rf_dataLength + TRANSACTION_FRAME_OVERHEAD) * this->deviceCount;
-            receiveDataBufferSize = rf_dataLength * this->deviceCount;
-
-            status = execute(MULTI_DEVICE_COMMAND_FRAME, this->deviceCount);
-        }else{
-            return Status::ERROR;
-        }
-    }
-
-    return status;
 }
 
 Status DaisyChain::writeRegisters(ReqType writeCommandType, Device device, uint16_t startRegister, uint8_t *data, uint8_t dataLength) {
@@ -373,15 +289,102 @@ Status DaisyChain::writeRegisters(ReqType writeCommandType, Device device, uint1
 
     return status;
 }
-Status DaisyChain::read(ReqType readCommandType, Device device, ReadWriteRegister startRegister, uint8_t registerCount) {
-    return readRegisters(readCommandType, device, static_cast<uint16_t>(startRegister), registerCount);
+
+Status DaisyChain::readRegisters(ReqType readCommandType, Device device, uint16_t startRegister, uint8_t registerCount) {
+    Status status = getCommandInit(readCommandType, 1, &cf_init);
+    if(status != Status::COMPLETED){
+        return status;
+    }
+
+    cf_dataLength = 1;
+    rf_dataLength = registerCount;
+    cf_regAdr = startRegister;
+    writeDataBufferByte(registerCount - 1);
+
+    if(readCommandType == ReqType::SINGLE_DEVICE_READ){
+        if(device == Device::MULTIPLE_DEVICES){
+            status = Status::ERROR;
+            return status;
+        }
+        if(device >= deviceCount){
+            status = Status::ERROR;
+            return status;
+        }
+
+        receiveBufferSize = rf_dataLength + TRANSACTION_FRAME_OVERHEAD;
+        receiveDataBufferSize = rf_dataLength;
+        cf_devAdr = device;
+
+        status = execute(SINGLE_DEVICE_COMMAND_FRAME, 1);
+    }else{
+        if(device != Device::MULTIPLE_DEVICES){
+            status = Status::ERROR;
+            return status;
+        }
+
+        if(readCommandType == ReqType::STACK_READ){
+            receiveBufferSize = (rf_dataLength + TRANSACTION_FRAME_OVERHEAD) * (this->deviceCount - 1);
+            receiveDataBufferSize = rf_dataLength * (this->deviceCount - 1);
+
+            status = execute(MULTI_DEVICE_COMMAND_FRAME, this->deviceCount - 1);
+        }else if(readCommandType == ReqType::BROADCAST_READ){
+            receiveBufferSize = (rf_dataLength + TRANSACTION_FRAME_OVERHEAD) * this->deviceCount;
+            receiveDataBufferSize = rf_dataLength * this->deviceCount;
+
+            status = execute(MULTI_DEVICE_COMMAND_FRAME, this->deviceCount);
+        }else{
+            return Status::ERROR;
+        }
+    }
+
+    return status;
 }
-Status DaisyChain::read(ReqType readCommandType, Device device, ReadOnlyRegister startRegister, uint8_t registerCount) {
-    return readRegisters(readCommandType, device, static_cast<uint16_t>(startRegister), registerCount);
+
+DaisyChain::DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx)
+    : uartHandle(&uartHandle), timHandle(&timHandle), deviceCount(deviceCount), UART_TX(uart_tx), UART_RX(uart_rx) {
 }
+
+void DaisyChain::init() {
+    init_UART_TX_GPIO();
+}
+
+Status DaisyChain::ping(Ping_us time_us) {
+    HAL_UART_DeInit(uartHandle);
+
+    HAL_GPIO_Init(UART_TX.getPort(), &UART_TX_GPIO_InitStruct);
+
+    if(UART_TX.read() != 1)
+        UART_TX.write(GPIO_PinState::GPIO_PIN_SET);
+
+    UART_TX.write(GPIO_PinState::GPIO_PIN_RESET);
+    HAL_TIM_Base_Start(timHandle);
+    uint16_t startTime = __HAL_TIM_GET_COUNTER(timHandle);
+    while(__HAL_TIM_GET_COUNTER(timHandle) - startTime <= time_us);
+    UART_TX.write(GPIO_PinState::GPIO_PIN_SET);
+
+    HAL_GPIO_DeInit(UART_TX.getPort(), UART_TX.getPin());
+
+    HAL_UART_Init(uartHandle);
+
+    return Status::COMPLETED;
+}
+
 Status DaisyChain::write(ReqType writeCommandType, Device device, ReadWriteRegister startRegister, uint8_t *data, uint8_t dataLength) {
     return writeRegisters(writeCommandType, device, static_cast<uint16_t>(startRegister), data, dataLength);
 }
+
 Status DaisyChain::write(ReqType writeCommandType, Device device, OTPRegister startRegister, uint8_t *data, uint8_t dataLength) {
     return writeRegisters(writeCommandType, device, static_cast<uint16_t>(startRegister), data, dataLength);
+}
+
+Status DaisyChain::read(ReqType readCommandType, Device device, ReadWriteRegister startRegister, uint8_t registerCount) {
+    return readRegisters(readCommandType, device, static_cast<uint16_t>(startRegister), registerCount);
+}
+
+Status DaisyChain::read(ReqType readCommandType, Device device, ReadOnlyRegister startRegister, uint8_t registerCount) {
+    return readRegisters(readCommandType, device, static_cast<uint16_t>(startRegister), registerCount);
+}
+
+Status DaisyChain::readDataBuffer(uint8_t *value) {
+    return readDataBufferByte(value);
 }
