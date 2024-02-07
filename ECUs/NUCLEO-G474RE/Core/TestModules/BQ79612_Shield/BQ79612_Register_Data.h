@@ -7,7 +7,7 @@ namespace BQ79612 {
         OTP_ECC_TEST = 0x034C,
         Control1     = 0x0309,
         DIR0_ADDR    = 0x0306,
-        COMM_CTRL    = 0x0308,
+        Comm_Ctrl    = 0x0308,
         ADC_CTRL1    = 0x030D,
         ADC_CTRL2    = 0x030E
     };

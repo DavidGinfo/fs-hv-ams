@@ -153,11 +153,12 @@ Status DaisyChain::writeCommandFrame(const TransactionContent command[]) {
 
 Status DaisyChain::readResponseFrames(uint8_t responseFrameCount) {
     Status status = Status::COMPLETED;
-    bool endFlag = false;
+    bool endFlag;
     uint8_t data;
 
     for(uint8_t frame = 0; frame < responseFrameCount; frame++){
 
+        endFlag = false;
         checksum.reset();
 
         for(uint8_t i = 0; !endFlag; i++){
@@ -433,8 +434,10 @@ Status DaisyChain::performAutoadressing() {
         // read back device addresses of all devices and compare them
         if(read(ReqType::BROADCAST_READ, Device::MULTIPLE_DEVICES, ReadWriteRegister::DIR0_ADDR, 1) != Status::COMPLETED)
             return Status::ERROR;
-        for(int i = 0; i < deviceCount; i++){
-            if(readDataBuffer(&receiveDataAA) != i)
+        for(int i = deviceCount - 1; i >= 0; i--){
+            if(readDataBuffer(&receiveDataAA) != Status::COMPLETED)
+                return Status::ERROR;
+            if(receiveDataAA != i)
                 return Status::ERROR;
         }
 
