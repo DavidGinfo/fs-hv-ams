@@ -411,19 +411,19 @@ Status DaisyChain::performAutoadressing() {
         }
 
         // set all devices to stack devices
-        sendDataAA = REGISTER_DEFAULT_VALUE_00 | COMM_CTRL::STACK_DEV;
-        if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
+        sendDataAA = REGISTER_DEFAULT_VALUE_00 | Comm_Ctrl::STACK_DEV;
+        if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::Comm_Ctrl, &sendDataAA, 1) != Status::COMPLETED)
             return Status::ERROR;
         sendDataAA = 0;
 
         // revoke stack device setting for base device
         sendDataAA = REGISTER_DEFAULT_VALUE_00;
-        if(write(ReqType::SINGLE_DEVICE_WRITE, Device::BASE_DEVICE, ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
+        if(write(ReqType::SINGLE_DEVICE_WRITE, Device::BASE_DEVICE, ReadWriteRegister::Comm_Ctrl, &sendDataAA, 1) != Status::COMPLETED)
             return Status::ERROR;
 
         // set up top of stack device
-        sendDataAA = REGISTER_DEFAULT_VALUE_00 | COMM_CTRL::STACK_DEV | COMM_CTRL::TOP_STACK;
-        if(write(ReqType::SINGLE_DEVICE_WRITE, static_cast<Device>(deviceCount - 1), ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
+        sendDataAA = REGISTER_DEFAULT_VALUE_00 | Comm_Ctrl::STACK_DEV | Comm_Ctrl::TOP_STACK;
+        if(write(ReqType::SINGLE_DEVICE_WRITE, static_cast<Device>(deviceCount - 1), ReadWriteRegister::Comm_Ctrl, &sendDataAA, 1) != Status::COMPLETED)
             return Status::ERROR;
 
         // read dummy data to sync delay-locked loop
@@ -438,5 +438,43 @@ Status DaisyChain::performAutoadressing() {
                 return Status::ERROR;
         }
 
+        return Status::COMPLETED;
+}
+
+Status DaisyChain::activateVCs(Device device, Active_Cell activeVCConfig) {
+        uint8_t sendDataAVC = activeVCConfig;
+        if(write(ReqType::SINGLE_DEVICE_WRITE, device, OTPRegister::ACTIVE_CELL, &sendDataAVC, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        return Status::COMPLETED;
+}
+
+Status DaisyChain::readCellVoltages(Device device, float *cellVoltages, uint8_t cellVoltageCount) {
+        // configure main adc in continous run mode and start adc
+        uint8_t sendDataRCV = ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN | ADC_Ctrl1::MAIN_GO;
+        if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataRCV, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        // read cell voltages from BQ
+        if(read(ReqType::SINGLE_DEVICE_READ, device,  static_cast<ReadOnlyRegister>(ReadOnlyRegister::VCELL1_LO - (cellVoltageCount * 2 - 1)), cellVoltageCount * 2) != Status::COMPLETED)
+            return Status::ERROR;
+
+        // write cell voltages in provided buffer
+        uint16_t voltage_raw = 0;
+        int16_t voltage_signed = 0;
+        uint8_t v_lo = 0;
+        uint8_t v_hi = 0;
+        for(uint8_t i = 0; i < cellVoltageCount; i++){
+            readDataBufferByte(&v_hi);
+            readDataBufferByte(&v_lo);
+
+            voltage_raw |= (static_cast<uint16_t>(v_hi) << 8) | static_cast<uint16_t>(v_lo);
+            voltage_signed = toSigned(voltage_raw);
+
+            cellVoltages[i] = static_cast<float>(voltage_signed) * MAIN_ADC_RESOLUTION_VOLTAGE;
+        }
+
+        // TODO implement exact delay in us
+        Parallel::delay(1);
         return Status::COMPLETED;
 }

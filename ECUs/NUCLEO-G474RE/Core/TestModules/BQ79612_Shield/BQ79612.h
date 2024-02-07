@@ -20,6 +20,8 @@ namespace BQ79612 {
     const uint8_t DATA_BUFFER_SIZE = static_cast<uint8_t>(TEST_DEVICE_COUNT * MAX_DATA_SIZE_RESPONSE_FRAME);
     inline constexpr Parallel::TimeMS HOST_UART_TIMEOUT = 10;
 
+    const float MAIN_ADC_RESOLUTION_VOLTAGE = 190.73;
+
     class DaisyChain{
       public:
         explicit DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
@@ -39,17 +41,19 @@ namespace BQ79612 {
         Status read(ReqType readCommandType, Device device, ReadWriteRegister startRegister, uint8_t registerCount);
         Status read(ReqType readCommandType, Device device, ReadOnlyRegister startRegister, uint8_t registerCount);
 
+        // TODO test if the pointer passes correctly through the layers
         Status readDataBuffer(uint8_t *value);
 
-        // TODO implement
-        // upper level funcionality
         Status performAutoadressing();
+        // TODO implement
         Status getFaults();
 
         // TODO implement
-        // top level functionality
-        Status readCellVoltage();
-        Status readCellTemperature();
+        Status activateVCs(Device device, Active_Cell activeVCConfig);
+        Status readCellVoltages(Device device, float *cellVoltages, uint8_t cellVoltageCount);
+
+        Status setActiveGPIOs(Device device, uint8_t activeGPIOCount);
+        Status readCellTemperature(Device device, uint8_t *celTemperatures, uint8_t cellTemperatureCount);
 
       private:
         UART_HandleTypeDef *uartHandle;
