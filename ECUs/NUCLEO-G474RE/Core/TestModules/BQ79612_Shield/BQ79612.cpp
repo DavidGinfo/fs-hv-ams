@@ -17,7 +17,7 @@ const TransactionContent MULTI_DEVICE_COMMAND_FRAME[] = {
         TransactionContent::TC_CRC
 };
 
-const TransactionContent REPSPONSE_FRAME[] = {
+const TransactionContent RESPONSE_FRAME[] = {
         TransactionContent::TC_INIT,
         TransactionContent::TC_DEV_ADR,
         TransactionContent::TC_REG_ADR,
@@ -117,21 +117,24 @@ Status DaisyChain::readResponseFrames(uint8_t responseFrameCount) {
         checksum.reset();
 
         for(uint8_t i = 0; !endFlag; i++){
-            switch(REPSPONSE_FRAME[i]){
+            switch(RESPONSE_FRAME[i]){
                 case TransactionContent::TC_INIT:
                     status = readBufferByte(&rf_init[frame]);
                     if(status != Status::COMPLETED)
                         return status;
+                    break;
 
                 case TransactionContent::TC_DEV_ADR:
                     status = readBufferByte(&rf_devAdr[frame]);
                     if(status != Status::COMPLETED)
                         return status;
+                    break;
 
                 case TransactionContent::TC_REG_ADR:
                     status = readBufferWord(&rf_regAdr[frame]);
                     if(status != Status::COMPLETED)
                         return status;
+                    break;
 
                 case TransactionContent::TC_DATA:
                     for(uint8_t j = 0; j < rf_dataLength; j++){
@@ -141,6 +144,7 @@ Status DaisyChain::readResponseFrames(uint8_t responseFrameCount) {
 
                         writeDataBufferByte(data);
                     }
+                    break;
 
                 case TransactionContent::TC_CRC:
                     endFlag = true;
@@ -165,16 +169,19 @@ Status DaisyChain::writeCommandFrame(const TransactionContent command[]) {
                 status = writeBufferByte(cf_init);
                 if(status != Status::COMPLETED)
                     return status;
+                break;
 
             case TransactionContent::TC_DEV_ADR:
                 status = writeBufferByte(cf_devAdr);
                 if(status != Status::COMPLETED)
                     return status;
+                break;
 
             case TransactionContent::TC_REG_ADR:
                 status = writeBufferWord(cf_regAdr);
                 if(status != Status::COMPLETED)
                     return status;
+                break;
 
             case TransactionContent::TC_DATA:
                 for(uint8_t j = 0; j < cf_dataLength; j++){
@@ -182,6 +189,7 @@ Status DaisyChain::writeCommandFrame(const TransactionContent command[]) {
                     if(status != Status::COMPLETED)
                         return status;
                 }
+                break;
 
             case TransactionContent::TC_CRC:
                 endFlag = true;
@@ -208,12 +216,16 @@ Status DaisyChain::execute(const TransactionContent command[], uint8_t responseF
     resetData();
 
     writeCommandFrame(command);
-    if(HAL_UART_Transmit(uartHandle, buffer, writeBufferPosition, HOST_UART_TIMEOUT) != HAL_OK)
+    if(HAL_UART_Transmit(uartHandle, buffer, writeBufferPosition, HOST_UART_TIMEOUT) != HAL_OK){
         return Status::ERROR;
-    if(HAL_UART_Receive(uartHandle, buffer, receiveBufferSize, HOST_UART_TIMEOUT) != HAL_OK)
-        return Status::ERROR;
+    }
 
-    readResponseFrames(responseFrameCount);
+    if(responseFrameCount > 0){
+        if(HAL_UART_Receive(uartHandle, buffer, receiveBufferSize, HOST_UART_TIMEOUT) != HAL_OK){
+            return Status::ERROR;
+        }
+        readResponseFrames(responseFrameCount);
+    }
 
     return Status::ERROR;
 }
@@ -248,157 +260,128 @@ Status DaisyChain::ping(Ping_us time_us) {
     return Status::COMPLETED;
 }
 
-Status DaisyChain::readData(uint8_t *value) {
+Status DaisyChain::readDataBuffer(uint8_t *value) {
     return readDataBufferByte(value);
 }
 
-Status DaisyChain::readSingleDevice(uint8_t devAddress, ReadRegister startRegister, uint8_t registerCount) {
-    Status status = getCommandInit(ReqType::SINGLE_DEVICE_READ, 1, &cf_init);
-    if(status != Status::COMPLETED){
-        return status;
-    }else if(devAddress > MAX_DEVICE_COUNT){
-        status = Status::ERROR;
-        return  status;
-    }
-
-    cf_dataLength = 1;
-    rf_dataLength = registerCount;
-    receiveBufferSize = rf_dataLength + TRANSACTION_FRAME_OVERHEAD;
-    receiveDataBufferSize = rf_dataLength;
-
-    cf_devAdr = devAddress;
-    cf_regAdr = startRegister;
-
-    writeDataBufferByte(registerCount - 1);
-
-    status = execute(SINGLE_DEVICE_COMMAND_FRAME, 1);
-
-    return status;
-}
-
-Status DaisyChain::writeSingleDevice(uint8_t devAddress, WriteRegister startRegister, uint8_t *data, uint8_t dataSize) {
-    Status status = getCommandInit(ReqType::SINGLE_DEVICE_WRITE, dataSize, &cf_init);
-    if(status != Status::COMPLETED){
-        return status;
-    }else if(devAddress > MAX_DEVICE_COUNT){
-        status = Status::ERROR;
-        return status;
-    }
-
-    cf_dataLength = dataSize;
-    rf_dataLength = 0;
-    receiveBufferSize = 0;
-    receiveDataBufferSize = 0;
-
-    cf_devAdr = devAddress;
-    cf_regAdr = startRegister;
-
-    for(uint8_t i = 0; i < dataSize; i++)
-        writeDataBufferByte(data[i]);
-
-    status = execute(SINGLE_DEVICE_COMMAND_FRAME, 0);
-
-    return status;
-}
-
-Status DaisyChain::readStack(ReadRegister startRegister, uint8_t registerCount) {
-    Status status = getCommandInit(ReqType::STACK_READ, 1, &cf_init);
+Status DaisyChain::readRegisters(ReqType readCommandType, Device device, uint16_t startRegister, uint8_t registerCount) {
+    Status status = getCommandInit(readCommandType, 1, &cf_init);
     if(status != Status::COMPLETED){
         return status;
     }
 
     cf_dataLength = 1;
     rf_dataLength = registerCount;
-    receiveBufferSize = (rf_dataLength + TRANSACTION_FRAME_OVERHEAD) * (this->deviceCount - 1);
-    receiveDataBufferSize = rf_dataLength * (this->deviceCount - 1);
-
     cf_regAdr = startRegister;
-
     writeDataBufferByte(registerCount - 1);
 
-    status = execute(MULTI_DEVICE_COMMAND_FRAME, this->deviceCount - 1);
+    if(readCommandType == ReqType::SINGLE_DEVICE_READ){
+        if(device == Device::MULTIPLE_DEVICES){
+            status = Status::ERROR;
+            return status;
+        }
+        if(device >= deviceCount){
+            status = Status::ERROR;
+            return status;
+        }
+
+        receiveBufferSize = rf_dataLength + TRANSACTION_FRAME_OVERHEAD;
+        receiveDataBufferSize = rf_dataLength;
+        cf_devAdr = device;
+
+        status = execute(SINGLE_DEVICE_COMMAND_FRAME, 1);
+    }else{
+        if(device != Device::MULTIPLE_DEVICES){
+            status = Status::ERROR;
+            return status;
+        }
+
+        if(readCommandType == ReqType::STACK_READ){
+            receiveBufferSize = (rf_dataLength + TRANSACTION_FRAME_OVERHEAD) * (this->deviceCount - 1);
+            receiveDataBufferSize = rf_dataLength * (this->deviceCount - 1);
+
+            status = execute(MULTI_DEVICE_COMMAND_FRAME, this->deviceCount - 1);
+        }else if(readCommandType == ReqType::BROADCAST_READ){
+            receiveBufferSize = (rf_dataLength + TRANSACTION_FRAME_OVERHEAD) * this->deviceCount;
+            receiveDataBufferSize = rf_dataLength * this->deviceCount;
+
+            status = execute(MULTI_DEVICE_COMMAND_FRAME, this->deviceCount);
+        }else{
+            return Status::ERROR;
+        }
+    }
 
     return status;
 }
 
-Status DaisyChain::writeStack(WriteRegister startRegister, uint8_t *data, uint8_t dataSize) {
-    Status status = getCommandInit(ReqType::STACK_WRITE, dataSize, &cf_init);
+Status DaisyChain::writeRegisters(ReqType writeCommandType, Device device, uint16_t startRegister, uint8_t *data, uint8_t dataLength) {
+    Status status = getCommandInit(writeCommandType, dataLength, &cf_init);
     if(status != Status::COMPLETED){
         return status;
     }
 
-    cf_dataLength = dataSize;
+    cf_dataLength = dataLength;
     rf_dataLength = 0;
     receiveBufferSize = 0;
     receiveDataBufferSize = 0;
-
     cf_regAdr = startRegister;
 
-    for(uint8_t i = 0; i < dataSize; i++)
-        writeDataBufferByte(data[i]);
+    if(writeCommandType == ReqType::SINGLE_DEVICE_WRITE){
+        if(device == Device::MULTIPLE_DEVICES){
+            status = Status::ERROR;
+            return status;
+        }
+        if(device >= deviceCount){
+            status = Status::ERROR;
+            return status;
+        }
 
-    status = execute(MULTI_DEVICE_COMMAND_FRAME, 0);
+        cf_devAdr = device;
+        for(uint8_t i = 0; i < dataLength; i++)
+            writeDataBufferByte(data[i]);
+        status = execute(SINGLE_DEVICE_COMMAND_FRAME, 0);
+    } else{
+        if(device != Device::MULTIPLE_DEVICES){
+            status = Status::ERROR;
+            return status;
+        }
+        if(writeCommandType == ReqType::BROADCAST_WRITE_REVERSE){
+            if(dataLength != 1){
+                status = Status::ERROR;
+                return status;
+            }
+            if(data[0] !=Control1::DIR_SEL){
+                status = Status::ERROR;
+                return status;
+            }
+            if(startRegister != ReadWriteRegister::Control1){
+                status = Status::ERROR;
+                return status;
+            }
+
+            writeDataBufferByte(Control1::DIR_SEL);
+        }else if (writeCommandType == ReqType::BROADCAST_WRITE | writeCommandType == ReqType::STACK_WRITE){
+            for(uint8_t i = 0; i < dataLength; i++){
+                writeDataBufferByte(data[i]);
+            }
+        }else{
+            return Status::ERROR;
+        }
+
+        status = execute(MULTI_DEVICE_COMMAND_FRAME, 0);
+    }
 
     return status;
 }
-
-Status DaisyChain::broadcastRead(ReadRegister startRegister, uint8_t registerCount) {
-    Status status = getCommandInit(ReqType::BROADCAST_READ, 1, &cf_init);
-    if(status != Status::COMPLETED){
-        return status;
-    }
-
-    cf_dataLength = 1;
-    rf_dataLength = registerCount;
-    receiveBufferSize = (rf_dataLength + TRANSACTION_FRAME_OVERHEAD) * this->deviceCount;
-    receiveDataBufferSize = rf_dataLength * this->deviceCount;
-
-    cf_regAdr = startRegister;
-
-    writeDataBufferByte(registerCount - 1);
-
-    status = execute(MULTI_DEVICE_COMMAND_FRAME, this->deviceCount);
-
-    return status;
+Status DaisyChain::read(ReqType readCommandType, Device device, ReadWriteRegister startRegister, uint8_t registerCount) {
+    return readRegisters(readCommandType, device, static_cast<uint16_t>(startRegister), registerCount);
 }
-
-Status DaisyChain::broadcastWrite(WriteRegister startRegister, uint8_t *data, uint8_t dataSize) {
-    Status status = getCommandInit(ReqType::BROADCAST_WRITE, dataSize, &cf_init);
-    if(status != Status::COMPLETED){
-        return status;
-    }
-
-    cf_dataLength = dataSize;
-    rf_dataLength = 0;
-    receiveBufferSize = 0;
-    receiveDataBufferSize = 0;
-
-    cf_regAdr = startRegister;
-
-    for(uint8_t i = 0; i < dataSize; i++)
-        writeDataBufferByte(data[i]);
-
-    status = execute(MULTI_DEVICE_COMMAND_FRAME, 0);
-
-    return status;
+Status DaisyChain::read(ReqType readCommandType, Device device, ReadOnlyRegister startRegister, uint8_t registerCount) {
+    return readRegisters(readCommandType, device, static_cast<uint16_t>(startRegister), registerCount);
 }
-
-Status DaisyChain::broadcastWriteReverse(WriteRegister startRegister) {
-    Status status = getCommandInit(ReqType::BROADCAST_WRITE_REVERSE, 1, &cf_init);
-    if(status != Status::COMPLETED){
-        return status;
-    }
-
-    cf_dataLength = 1;
-    rf_dataLength = 0;
-    receiveBufferSize = 0;
-    receiveDataBufferSize = 0;
-
-    cf_regAdr = startRegister;
-
-    writeDataBufferByte(Control1::DIR_SEL);
-
-    status = execute(MULTI_DEVICE_COMMAND_FRAME, 0);
-
-    return status;
+Status DaisyChain::write(ReqType writeCommandType, Device device, ReadWriteRegister startRegister, uint8_t *data, uint8_t dataLength) {
+    return writeRegisters(writeCommandType, device, static_cast<uint16_t>(startRegister), data, dataLength);
+}
+Status DaisyChain::write(ReqType writeCommandType, Device device, OTPRegister startRegister, uint8_t *data, uint8_t dataLength) {
+    return writeRegisters(writeCommandType, device, static_cast<uint16_t>(startRegister), data, dataLength);
 }
