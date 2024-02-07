@@ -35,28 +35,12 @@ namespace BQ79612 {
         // TODO outsource generic abstraction for hw timer functionality to library
         Status ping(Ping_us time_us);
 
-        Status readData(uint8_t *value);
+        Status readDataBuffer(uint8_t *value);
 
-        Status readSingleDevice(uint8_t devAddress, ReadRegister startRegister, uint8_t registerCount);
-
-        Status writeSingleDevice(uint8_t devAddress, WriteRegister startRegister, uint8_t *data, uint8_t dataSize);
-
-        Status readStack(ReadRegister startRegister, uint8_t registerCount);
-
-        Status writeStack(WriteRegister startRegister, uint8_t *data, uint8_t dataSize);
-
-        Status broadcastRead(ReadRegister startRegister, uint8_t registerCount);
-
-        Status broadcastWrite(WriteRegister startRegister, uint8_t *data, uint8_t dataSize);
-
-        Status broadcastWriteReverse(WriteRegister startRegister);
-
-        // TODO implement
-        // perhaps better implementation for low level functionality
-        Status read(ReadReqType readCommandType, DeviceAddress devAddress, ReadWriteRegister startRegister, uint8_t registerCount);
-        Status read(ReadReqType readCommandType, DeviceAddress devAddress, ReadOnlyRegister startRegister, uint8_t registerCount);
-        Status write(WriteReqType writeCommandType, DeviceAddress devAddress, ReadWriteRegister startRegister, uint8_t *data, uint8_t dataLength);
-        Status write(WriteReqType writeCommandType, DeviceAddress devAddress, OTPRegister startRegister, uint8_t *data, uint8_t dataLength);
+        Status read(ReqType readCommandType, Device device, ReadWriteRegister startRegister, uint8_t registerCount);
+        Status read(ReqType readCommandType, Device device, ReadOnlyRegister startRegister, uint8_t registerCount);
+        Status write(ReqType writeCommandType, Device device, ReadWriteRegister startRegister, uint8_t *data, uint8_t dataLength);
+        Status write(ReqType writeCommandType, Device device, OTPRegister startRegister, uint8_t *data, uint8_t dataLength);
 
         // TODO implement
         // upper level funcionality
@@ -101,6 +85,7 @@ namespace BQ79612 {
         uint8_t rf_devAdr[TEST_DEVICE_COUNT] = {};
         uint16_t rf_regAdr[TEST_DEVICE_COUNT] = {};
         uint16_t rf_crc[TEST_DEVICE_COUNT]    = {};
+
         uint16_t rf_crc_calc[TEST_DEVICE_COUNT] = {};
 
         void init_UART_TX_GPIO();
@@ -121,5 +106,8 @@ namespace BQ79612 {
 
         Status getCommandInit(ReqType requestType, uint8_t dataSize, uint8_t *value);
         Status execute(const TransactionContent command[], uint8_t responseFrameCount);
+
+        Status readRegisters(ReqType readCommandType, Device device, uint16_t startRegister, uint8_t registerCount);
+        Status writeRegisters(ReqType writeCommandType, Device device, uint16_t startRegister, uint8_t *data, uint8_t dataLength);
     };
 }
