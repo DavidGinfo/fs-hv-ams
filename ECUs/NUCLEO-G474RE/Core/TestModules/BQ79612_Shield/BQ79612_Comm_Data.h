@@ -11,17 +11,14 @@ namespace BQ79612 {
         TC_CRC
     };
 
-    enum WriteReqType : uint8_t {
-        SINGLE_DEVICE_WRITE = 1,
-        STACK_WRITE = 3,
-        BROADCAST_WRITE = 5,
-        BROADCAST_WRITE_REVERSE = 6,
-    };
-
-    enum ReadReqType : uint8_t {
+    enum ReqType : uint8_t {
         SINGLE_DEVICE_READ = 0,
+        SINGLE_DEVICE_WRITE = 1,
         STACK_READ = 2,
+        STACK_WRITE = 3,
         BROADCAST_READ = 4,
+        BROADCAST_WRITE = 5,
+        BROADCAST_WRITE_REVERSE = 6
     };
 
     enum Ping_us : uint16_t {

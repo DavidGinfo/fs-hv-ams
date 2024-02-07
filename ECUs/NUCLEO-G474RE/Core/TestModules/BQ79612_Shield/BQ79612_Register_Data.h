@@ -3,34 +3,22 @@
 #include <util/Common.h>
 
 namespace BQ79612 {
-
-    // TODO implement
     enum ReadWriteRegister : uint16_t {
-
+        OTP_ECC_TEST = 0x034C,
+        Control1     = 0x0309,
+        DIR0_ADDR    = 0x0306,
+        COMM_CTRL    = 0x0308
     };
 
-    enum ReadOnlyRegister : uint16_t {
-
+    enum ReadOnlyRegister : uint16_t
+    {
+        PART_ID       = 0x0500,
+        FAULT_SUMMERY = 0x052D
     };
 
-    enum OTPRegister : uint16_t {
+    enum OTPRegister : uint16_t
+    {
 
-    };
-
-    enum ReadRegister : uint16_t {
-        OTP_ECC_TEST_R = 0x034C,
-        Control1_R     = 0x0309,
-        DIR0_ADDR_R    = 0x0306,
-        COMM_CTRL_R    = 0x0308,
-        PART_ID        = 0x0500,
-        FAULT_SUMMERY  = 0x052D
-    };
-
-    enum WriteRegister : uint16_t {
-        OTP_ECC_TEST_W = 0x034C,
-        Control1_W     = 0x0309,
-        DIR0_ADDR_W    = 0x0306,
-        COMM_CTRL_W    = 0x0308
     };
 
     enum Control1 : uint8_t {
