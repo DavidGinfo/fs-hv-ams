@@ -93,7 +93,7 @@ Status DaisyChain::writeDataBufferByte(uint8_t value) {
     if(writeDataBufferPosition >= DATA_BUFFER_SIZE)
         return Status::ERROR;
 
-    dataBuffer[writeBufferPosition++] = value;
+    dataBuffer[writeDataBufferPosition++] = value;
 
     return Status::COMPLETED;
 }
@@ -227,7 +227,7 @@ Status DaisyChain::execute(const TransactionContent command[], uint8_t responseF
         readResponseFrames(responseFrameCount);
     }
 
-    return Status::ERROR;
+    return Status::COMPLETED;
 }
 
 Status DaisyChain::writeRegisters(ReqType writeCommandType, Device device, uint16_t startRegister, uint8_t *data, uint8_t dataLength) {
@@ -387,4 +387,56 @@ Status DaisyChain::read(ReqType readCommandType, Device device, ReadOnlyRegister
 
 Status DaisyChain::readDataBuffer(uint8_t *value) {
     return readDataBufferByte(value);
+}
+
+Status DaisyChain::performAutoadressing() {
+        uint8_t sendDataAA = 0;
+        uint8_t receiveDataAA = 0;
+
+        // send dummy data to sync delay-locked loop
+        sendDataAA = REGISTER_DEFAULT_VALUE_00;
+        if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::OTP_ECC_TEST, &sendDataAA, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        // enable autoadressing on all devices
+        sendDataAA = REGISTER_DEFAULT_VALUE_00 | Control1::ADDR_WR;
+        if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::Control1, &sendDataAA, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        // distribute addresses to all the devices
+        for(int i = 0; i < deviceCount; i++){
+            sendDataAA = REGISTER_DEFAULT_VALUE_00 | i;
+            if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::DIR0_ADDR, &sendDataAA, 1) != Status::COMPLETED)
+                return Status::ERROR;
+        }
+
+        // set all devices to stack devices
+        sendDataAA = REGISTER_DEFAULT_VALUE_00 | COMM_CTRL::STACK_DEV;
+        if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
+            return Status::ERROR;
+        sendDataAA = 0;
+
+        // revoke stack device setting for base device
+        sendDataAA = REGISTER_DEFAULT_VALUE_00;
+        if(write(ReqType::SINGLE_DEVICE_WRITE, Device::BASE_DEVICE, ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        // set up top of stack device
+        sendDataAA = REGISTER_DEFAULT_VALUE_00 | COMM_CTRL::STACK_DEV | COMM_CTRL::TOP_STACK;
+        if(write(ReqType::SINGLE_DEVICE_WRITE, static_cast<Device>(deviceCount - 1), ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        // read dummy data to sync delay-locked loop
+        if(read(ReqType::BROADCAST_READ, Device::MULTIPLE_DEVICES, ReadWriteRegister::OTP_ECC_TEST, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        // read back device addresses of all devices and compare them
+        if(read(ReqType::BROADCAST_READ, Device::MULTIPLE_DEVICES, ReadWriteRegister::DIR0_ADDR, 1) != Status::COMPLETED)
+            return Status::ERROR;
+        for(int i = 0; i < deviceCount; i++){
+            if(readDataBuffer(&receiveDataAA) != i)
+                return Status::ERROR;
+        }
+
+        return Status::COMPLETED;
 }

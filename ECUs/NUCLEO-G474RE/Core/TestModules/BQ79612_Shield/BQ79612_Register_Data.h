@@ -1,6 +1,8 @@
 #pragma once
 
 namespace BQ79612 {
+    const uint8_t REGISTER_DEFAULT_VALUE_00 = 0x00;
+
     enum ReadWriteRegister : uint16_t {
         OTP_ECC_TEST = 0x034C,
         Control1     = 0x0309,

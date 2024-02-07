@@ -43,8 +43,8 @@ namespace BQ79612 {
 
         // TODO implement
         // upper level funcionality
-        Status getFaults();
         Status performAutoadressing();
+        Status getFaults();
 
         // TODO implement
         // top level functionality
