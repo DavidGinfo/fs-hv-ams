@@ -228,6 +228,8 @@ Status DaisyChain::execute(const TransactionContent command[], uint8_t responseF
         readResponseFrames(responseFrameCount);
     }
 
+    resetData();
+
     return Status::COMPLETED;
 }
 
@@ -465,8 +467,8 @@ Status DaisyChain::readCellVoltages(Device device, float *cellVoltages, uint8_t 
         // write cell voltages in provided buffer
         uint16_t voltage_raw = 0;
         int16_t voltage_signed = 0;
-        uint8_t v_lo = 0;
         uint8_t v_hi = 0;
+        uint8_t v_lo = 0;
         for(uint8_t i = 0; i < cellVoltageCount; i++){
             readDataBufferByte(&v_hi);
             readDataBufferByte(&v_lo);
@@ -479,5 +481,44 @@ Status DaisyChain::readCellVoltages(Device device, float *cellVoltages, uint8_t 
 
         // TODO implement exact delay in us
         Parallel::delay(1);
+        return Status::COMPLETED;
+}
+
+// TODO achtung pfusch
+Status DaisyChain::setActivateGPIOADCs(Device device, uint8_t activeGPIOCount) {
+        uint8_t sendDataAGA = GPIO_Conf4::GPIO8_ADC_ONLY | GPIO_Conf4::GPIO7_ADC_ONLY;
+        if(write(ReqType::SINGLE_DEVICE_WRITE, device, OTPRegister::GPIO_CONF4, &sendDataAGA, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        return Status::COMPLETED;
+}
+Status DaisyChain::readCellTemperature(Device device, float *cellTemperatures, uint8_t cellTemperatureCount) {
+        uint8_t sendDataCT = Control2::TSREF_EN;
+        if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::CONTROL2, &sendDataCT, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        // configure main adc in continous run mode and start adc
+        sendDataCT = REGISTER_DEFAULT_VALUE_00 | ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN | ADC_Ctrl1::MAIN_GO;
+        if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataCT, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        if(read(ReqType::SINGLE_DEVICE_READ, device,  ReadOnlyRegister::GPIO7_HI, cellTemperatureCount * 2) != Status::COMPLETED)
+            return Status::ERROR;
+
+        // write cell temperatures in provided buffer
+        uint16_t temperature_raw = 0;
+        int16_t temperature_signed = 0;
+        uint8_t t_hi = 0;
+        uint8_t t_lo = 0;
+        for(uint8_t i = 0; i < cellTemperatureCount; i++){
+            readDataBufferByte(&t_hi);
+            readDataBufferByte(&t_lo);
+
+            temperature_raw |= (static_cast<uint16_t>(t_hi) << 8) | static_cast<uint16_t>(t_lo);
+            temperature_signed = toSigned(temperature_raw);
+
+            cellTemperatures[i] = static_cast<float>(temperature_signed) * MAIN_ADC_RESOLUTION_GPIO;
+        }
+
         return Status::COMPLETED;
 }

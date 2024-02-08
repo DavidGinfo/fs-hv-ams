@@ -36,11 +36,19 @@ void runAMS_Shield(){
     if(ams.performAutoadressing() != Status::COMPLETED)
         status = false;
 
-    if(ams.activateVCs(Device::STACK_DEVICE2, Active_Cell::_6S) != Status::COMPLETED)
+//    if(ams.activateVCs(Device::STACK_DEVICE2, Active_Cell::_6S) != Status::COMPLETED)
+//        status = false;
+//
+//    float voltages[2] = {};
+//    if(ams.readCellVoltages(Device::STACK_DEVICE2, voltages, 2) != Status::COMPLETED)
+//        status = false;
+
+    if(ams.setActivateGPIOADCs(Device::STACK_DEVICE2, 2) != Status::COMPLETED)
         status = false;
 
-    float voltages[2] = {};
-    if(ams.readCellVoltages(Device::STACK_DEVICE2, voltages, 2) != Status::COMPLETED)
+    // TODO unzuverlässig, funktioniert nur im debug -> irgendwo delay einbauen
+    float temperatures[2] = {};
+    if(ams.readCellTemperature(Device::STACK_DEVICE2, temperatures, 2) != Status::COMPLETED)
         status = false;
 
     for(;;){

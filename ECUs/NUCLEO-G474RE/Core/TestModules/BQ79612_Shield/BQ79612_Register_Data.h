@@ -6,6 +6,7 @@ namespace BQ79612 {
     enum ReadWriteRegister : uint16_t {
         OTP_ECC_TEST = 0x034C,
         Control1     = 0x0309,
+        CONTROL2     = 0x030A,
         DIR0_ADDR    = 0x0306,
         Comm_Ctrl    = 0x0308,
         ADC_CTRL1    = 0x030D,
@@ -38,11 +39,31 @@ namespace BQ79612 {
         VCELL2_HI     = 0x0584,
         VCELL2_LO     = 0x0585,
         VCELL1_HI     = 0x0586,
-        VCELL1_LO     = 0x0587
+        VCELL1_LO     = 0x0587,
+        GPIO1_HI      = 0x058E,
+        GPIO1_LO      = 0x058F,
+        GPIO2_HI      = 0x0590,
+        GPIO2_LO      = 0x0591,
+        GPIO3_HI      = 0x0592,
+        GPIO3_LO      = 0x0593,
+        GPIO4_HI      = 0x0594,
+        GPIO4_LO      = 0x0595,
+        GPIO5_HI      = 0x0596,
+        GPIO5_LO      = 0x0597,
+        GPIO6_HI      = 0x0598,
+        GPIO6_LO      = 0x0599,
+        GPIO7_HI      = 0x059A,
+        GPIO7_LO      = 0x059B,
+        GPIO8_HI      = 0x059C,
+        GPIO8_LO      = 0x059D
     };
 
     enum OTPRegister : uint16_t {
-        ACTIVE_CELL = 0x0003
+        ACTIVE_CELL = 0x0003,
+        GPIO_CONF1  = 0x000E,
+        GPIO_CONF2  = 0x000F,
+        GPIO_CONF3  = 0x0010,
+        GPIO_CONF4  = 0x0011
     };
 
     enum Control1 : uint8_t {
@@ -54,6 +75,11 @@ namespace BQ79612 {
         GOTO_SLEEP    = 1 << 2,
         SOFT_RESET    = 1 << 1,
         ADDR_WR       = 1
+    };
+
+    enum Control2 : uint8_t {
+        SEND_HW_RESET = 1 << 1,
+        TSREF_EN      = 1
     };
 
     enum OTP_ECC_Test : uint8_t {
@@ -85,5 +111,36 @@ namespace BQ79612 {
         MAIN_MODE_NOT_RUNNING   = 0b00,
         MAIN_MODE_SINGLE_RUN    = 0b01,
         MAIN_MODE_CONTINOUS_RUN = 0b10
+    };
+
+    enum GPIO_Conf1 : uint8_t {
+
+    };
+
+    enum GPIO_Conf2 : uint8_t {
+
+    };
+
+    enum GPIO_Conf3 : uint8_t {
+
+    };
+
+    enum GPIO_Conf4 : uint8_t {
+        GPIO8_DISABLED            = 0b000 << 3,
+        GPIO8_ADC_OTUT            = 0b001 << 3,
+        GPIO8_ADC_ONLY            = 0b010 << 3,
+        GPIO8_DIGITAL_INPUT       = 0b011 << 3,
+        GPIO8_OUTPUT_HIGH         = 0b100 << 3,
+        GPIO8_OUTPUT_LOW          = 0b101 << 3,
+        GPIO8_ADC_PULL_UP         = 0b110 << 3,
+        GPIO8_ADC_PULL_DOWN       = 0b111 << 3,
+        GPIO7_DISABLED            = 0b000,
+        GPIO7_ADC_OTUT            = 0b001,
+        GPIO7_ADC_ONLY            = 0b010,
+        GPIO7_DIGITAL_INPUT       = 0b011,
+        GPIO7_OUTPUT_HIGH         = 0b100,
+        GPIO7_OUTPUT_LOW          = 0b101,
+        GPIO7_ADC_PULL_UP         = 0b110,
+        GPIO7_ADC_PULL_DOWN       = 0b111
     };
 }

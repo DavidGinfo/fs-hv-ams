@@ -21,6 +21,7 @@ namespace BQ79612 {
     inline constexpr Parallel::TimeMS HOST_UART_TIMEOUT = 10;
 
     const float MAIN_ADC_RESOLUTION_VOLTAGE = 190.73;
+    const float MAIN_ADC_RESOLUTION_GPIO = 152.59;
 
     class DaisyChain{
       public:
@@ -52,8 +53,8 @@ namespace BQ79612 {
         Status activateVCs(Device device, Active_Cell activeVCConfig);
         Status readCellVoltages(Device device, float *cellVoltages, uint8_t cellVoltageCount);
 
-        Status setActiveGPIOs(Device device, uint8_t activeGPIOCount);
-        Status readCellTemperature(Device device, uint8_t *celTemperatures, uint8_t cellTemperatureCount);
+        Status setActivateGPIOADCs(Device device, uint8_t activeGPIOCount);
+        Status readCellTemperature(Device device, float *cellTemperatures, uint8_t cellTemperatureCount);
 
       private:
         UART_HandleTypeDef *uartHandle;
