@@ -208,7 +208,7 @@ Status DaisyChain::getCommandInit(ReqType requestType, uint8_t dataSize, uint8_t
     if(dataSize > 8 || dataSize == 0)
         return Status::ERROR;
 
-    *value = (dataSize - 1) | (requestType << 4) | (1 << 7);
+    *value = (dataSize - 1) | (static_cast<uint8_t>(requestType) << 4) | (1 << 7);
 
     return Status::COMPLETED;
 }
@@ -250,12 +250,12 @@ Status DaisyChain::writeRegisters(ReqType writeCommandType, Device device, uint1
             status = Status::ERROR;
             return status;
         }
-        if(device >= deviceCount){
+        if(static_cast<uint8_t>(device) >= deviceCount){
             status = Status::ERROR;
             return status;
         }
 
-        cf_devAdr = device;
+        cf_devAdr = static_cast<uint8_t>(device);
         for(uint8_t i = 0; i < dataLength; i++)
             writeDataBufferByte(data[i]);
         status = execute(SINGLE_DEVICE_COMMAND_FRAME, 0);
@@ -269,16 +269,16 @@ Status DaisyChain::writeRegisters(ReqType writeCommandType, Device device, uint1
                 status = Status::ERROR;
                 return status;
             }
-            if(data[0] !=Control1::DIR_SEL){
+            if(data[0] != static_cast<uint8_t>(Control1::DIR_SEL)){
                 status = Status::ERROR;
                 return status;
             }
-            if(startRegister != ReadWriteRegister::Control1){
+            if(startRegister != static_cast<uint8_t>(ReadWriteRegister::CONTROL1)){
                 status = Status::ERROR;
                 return status;
             }
 
-            writeDataBufferByte(Control1::DIR_SEL);
+            writeDataBufferByte(static_cast<uint8_t>(Control1::DIR_SEL));
         }else if (writeCommandType == ReqType::BROADCAST_WRITE | writeCommandType == ReqType::STACK_WRITE){
             for(uint8_t i = 0; i < dataLength; i++){
                 writeDataBufferByte(data[i]);
@@ -309,14 +309,14 @@ Status DaisyChain::readRegisters(ReqType readCommandType, Device device, uint16_
             status = Status::ERROR;
             return status;
         }
-        if(device >= deviceCount){
+        if(static_cast<uint8_t>(device) >= deviceCount){
             status = Status::ERROR;
             return status;
         }
 
         receiveBufferSize = rf_dataLength + TRANSACTION_FRAME_OVERHEAD;
         receiveDataBufferSize = rf_dataLength;
-        cf_devAdr = device;
+        cf_devAdr = static_cast<uint8_t>(device);
 
         status = execute(SINGLE_DEVICE_COMMAND_FRAME, 1);
     }else{
@@ -362,7 +362,7 @@ Status DaisyChain::ping(Ping_us time_us) {
     UART_TX.write(GPIO_PinState::GPIO_PIN_RESET);
     HAL_TIM_Base_Start(timHandle);
     uint16_t startTime = __HAL_TIM_GET_COUNTER(timHandle);
-    while(__HAL_TIM_GET_COUNTER(timHandle) - startTime <= time_us);
+    while(__HAL_TIM_GET_COUNTER(timHandle) - startTime <= static_cast<uint8_t>(time_us));
     UART_TX.write(GPIO_PinState::GPIO_PIN_SET);
 
     HAL_GPIO_DeInit(UART_TX.getPort(), UART_TX.getPin());
@@ -397,36 +397,36 @@ Status DaisyChain::performAutoadressing() {
         uint8_t receiveDataAA = 0;
 
         // send dummy data to sync delay-locked loop
-        sendDataAA = REGISTER_DEFAULT_VALUE_00;
+        sendDataAA = static_cast<uint8_t>(OTP_ECC_Test::RESET_VALUE);
         if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::OTP_ECC_TEST, &sendDataAA, 1) != Status::COMPLETED)
             return Status::ERROR;
 
         // enable autoadressing on all devices
-        sendDataAA = REGISTER_DEFAULT_VALUE_00 | Control1::ADDR_WR;
-        if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::Control1, &sendDataAA, 1) != Status::COMPLETED)
+        sendDataAA = static_cast<uint8_t>(Control1::RESET_VALUE) | static_cast<uint8_t>(Control1::ADDR_WR);
+        if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::CONTROL1, &sendDataAA, 1) != Status::COMPLETED)
             return Status::ERROR;
 
         // distribute addresses to all the devices
         for(int i = 0; i < deviceCount; i++){
-            sendDataAA = REGISTER_DEFAULT_VALUE_00 | i;
+            sendDataAA = RESET_VALUE_0 | i;
             if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::DIR0_ADDR, &sendDataAA, 1) != Status::COMPLETED)
                 return Status::ERROR;
         }
 
         // set all devices to stack devices
-        sendDataAA = REGISTER_DEFAULT_VALUE_00 | Comm_Ctrl::STACK_DEV;
-        if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::Comm_Ctrl, &sendDataAA, 1) != Status::COMPLETED)
+        sendDataAA = static_cast<uint8_t>(Comm_Ctrl::RESET_VALUE) | static_cast<uint8_t>(Comm_Ctrl::STACK_DEV);
+        if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
             return Status::ERROR;
         sendDataAA = 0;
 
         // revoke stack device setting for base device
-        sendDataAA = REGISTER_DEFAULT_VALUE_00;
-        if(write(ReqType::SINGLE_DEVICE_WRITE, Device::BASE_DEVICE, ReadWriteRegister::Comm_Ctrl, &sendDataAA, 1) != Status::COMPLETED)
+        sendDataAA = static_cast<uint8_t>(Comm_Ctrl::RESET_VALUE);
+        if(write(ReqType::SINGLE_DEVICE_WRITE, Device::BASE_DEVICE, ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
             return Status::ERROR;
 
         // set up top of stack device
-        sendDataAA = REGISTER_DEFAULT_VALUE_00 | Comm_Ctrl::STACK_DEV | Comm_Ctrl::TOP_STACK;
-        if(write(ReqType::SINGLE_DEVICE_WRITE, static_cast<Device>(deviceCount - 1), ReadWriteRegister::Comm_Ctrl, &sendDataAA, 1) != Status::COMPLETED)
+        sendDataAA = static_cast<uint8_t>(Comm_Ctrl::RESET_VALUE) | static_cast<uint8_t>(Comm_Ctrl::STACK_DEV) | static_cast<uint8_t>(Comm_Ctrl::TOP_STACK);
+        if(write(ReqType::SINGLE_DEVICE_WRITE, static_cast<Device>(deviceCount - 1), ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
             return Status::ERROR;
 
         // read dummy data to sync delay-locked loop
@@ -447,7 +447,7 @@ Status DaisyChain::performAutoadressing() {
 }
 
 Status DaisyChain::activateVCs(Device device, Active_Cell activeVCConfig) {
-        uint8_t sendDataAVC = activeVCConfig;
+        uint8_t sendDataAVC = static_cast<uint8_t>(activeVCConfig);
         if(write(ReqType::SINGLE_DEVICE_WRITE, device, OTPRegister::ACTIVE_CELL, &sendDataAVC, 1) != Status::COMPLETED)
             return Status::ERROR;
 
@@ -456,12 +456,15 @@ Status DaisyChain::activateVCs(Device device, Active_Cell activeVCConfig) {
 
 Status DaisyChain::readCellVoltages(Device device, float *cellVoltages, uint8_t cellVoltageCount) {
         // configure main adc in continous run mode and start adc
-        uint8_t sendDataRCV = ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN | ADC_Ctrl1::MAIN_GO;
+        uint8_t sendDataRCV = static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
         if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataRCV, 1) != Status::COMPLETED)
             return Status::ERROR;
 
+        // TODO implement exact delay in us
+        Parallel::delay(2);
+
         // read cell voltages from BQ
-        if(read(ReqType::SINGLE_DEVICE_READ, device,  static_cast<ReadOnlyRegister>(ReadOnlyRegister::VCELL1_LO - (cellVoltageCount * 2 - 1)), cellVoltageCount * 2) != Status::COMPLETED)
+        if(read(ReqType::SINGLE_DEVICE_READ, device,  static_cast<ReadOnlyRegister>(static_cast<uint8_t>(ReadOnlyRegister::VCELL1_LO) - (cellVoltageCount * 2 - 1)), cellVoltageCount * 2) != Status::COMPLETED)
             return Status::ERROR;
 
         // write cell voltages in provided buffer
@@ -476,48 +479,82 @@ Status DaisyChain::readCellVoltages(Device device, float *cellVoltages, uint8_t 
             voltage_raw |= (static_cast<uint16_t>(v_hi) << 8) | static_cast<uint16_t>(v_lo);
             voltage_signed = toSigned(voltage_raw);
 
-            cellVoltages[i] = static_cast<float>(voltage_signed) * MAIN_ADC_RESOLUTION_VOLTAGE;
+            cellVoltages[i] = static_cast<float>(voltage_signed) * MAIN_AUX_ADC_RESOLUTION_VCELL;
         }
 
-        // TODO implement exact delay in us
-        Parallel::delay(1);
         return Status::COMPLETED;
 }
 
-// TODO achtung pfusch
+// TODO function is not generic in terms of the GPIOs to activate, this is because of the shield NTCs, must be changed later
 Status DaisyChain::setActivateGPIOADCs(Device device, uint8_t activeGPIOCount) {
-        uint8_t sendDataAGA = GPIO_Conf4::GPIO8_ADC_ONLY | GPIO_Conf4::GPIO7_ADC_ONLY;
+        uint8_t sendDataAGA = static_cast<uint8_t>(GPIO_Conf4::GPIO8_ADC_ONLY) | static_cast<uint8_t>(GPIO_Conf4::GPIO7_ADC_ONLY);
         if(write(ReqType::SINGLE_DEVICE_WRITE, device, OTPRegister::GPIO_CONF4, &sendDataAGA, 1) != Status::COMPLETED)
             return Status::ERROR;
 
         return Status::COMPLETED;
 }
+
+// TODO function is not generic in terms of the GPIOs to read, this is because of the shield NTCs, must be changed later
+// TODO make sure that the wanted gpios are corretly activatated and through an error if not
+// TODO write more generic version which can read back cell temperatures
+/**
+ * This function reads back a the cell temperatures of the wanted device in the chain.
+ * The consecutive cells to read the temperatures from has to be connected to the adjacent GPIOs of the called device to ensure correct functionality
+ * It is mandatory to call activate the ADCs for the needed GPIOs first.
+ *
+ * @param device device which should return cell temperatures
+ * @param cellTemperatures buffer for the cell temperatures
+ * @param cellTemperatureCount number of consecutive cells to read the temperatures from, starting from the first
+ * @return status code
+ */
 Status DaisyChain::readCellTemperature(Device device, float *cellTemperatures, uint8_t cellTemperatureCount) {
-        uint8_t sendDataCT = Control2::TSREF_EN;
+        uint8_t sendDataCT = static_cast<uint8_t>(Control2::TSREF_EN);
         if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::CONTROL2, &sendDataCT, 1) != Status::COMPLETED)
             return Status::ERROR;
 
-        // configure main adc in continous run mode and start adc
-        sendDataCT = REGISTER_DEFAULT_VALUE_00 | ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN | ADC_Ctrl1::MAIN_GO;
+        sendDataCT = static_cast<uint8_t>(ADC_Ctrl1::RESET_VALUE) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
         if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataCT, 1) != Status::COMPLETED)
             return Status::ERROR;
 
-        if(read(ReqType::SINGLE_DEVICE_READ, device,  ReadOnlyRegister::GPIO7_HI, cellTemperatureCount * 2) != Status::COMPLETED)
+        // TODO implement exact delay in us
+        Parallel::delay(3);
+
+        if(read(ReqType::SINGLE_DEVICE_READ, device,  ReadOnlyRegister::TSREF_HI, 2) != Status::COMPLETED)
             return Status::ERROR;
 
-        // write cell temperatures in provided buffer
-        uint16_t temperature_raw = 0;
-        int16_t temperature_signed = 0;
-        uint8_t t_hi = 0;
-        uint8_t t_lo = 0;
+        uint8_t tsref_hi = 0;
+        uint8_t tsref_lo = 0;
+        uint16_t tsref_raw = 0;
+        float v_tsref = 0;
+
+        readDataBufferByte(&tsref_hi);
+        readDataBufferByte(&tsref_lo);
+
+        tsref_raw |= (static_cast<uint16_t>(tsref_hi) << 8) | static_cast<uint16_t>(tsref_lo);
+        v_tsref = static_cast<float>(toSigned(tsref_raw)) * MAIN_ADC_RESOLUTION_TSREF;
+
+        // TODO change "static_cast<ReadOnlyRegister>(ReadOnlyRegister::GPIO1_HI + 12)" to "ReadOnlyRegister::GPIO1_HI" to generalize function
+        if(read(ReqType::SINGLE_DEVICE_READ, device,  static_cast<ReadOnlyRegister>(static_cast<uint8_t>(ReadOnlyRegister::GPIO1_HI) + 12), cellTemperatureCount * 2) != Status::COMPLETED)
+            return Status::ERROR;
+
+        uint8_t gpiox_hi = 0;
+        uint8_t gpiox_lo = 0;
+        uint16_t gpiox_raw = 0;
+        int16_t gpiox_signed = 0;
+        float gpiox_voltage  = 0;
+        float r_ntc = 0;
+
         for(uint8_t i = 0; i < cellTemperatureCount; i++){
-            readDataBufferByte(&t_hi);
-            readDataBufferByte(&t_lo);
+            readDataBufferByte(&gpiox_hi);
+            readDataBufferByte(&gpiox_lo);
 
-            temperature_raw |= (static_cast<uint16_t>(t_hi) << 8) | static_cast<uint16_t>(t_lo);
-            temperature_signed = toSigned(temperature_raw);
+            gpiox_raw |= (static_cast<uint16_t>(gpiox_hi) << 8) | static_cast<uint16_t>(gpiox_lo);
+            gpiox_signed = toSigned(gpiox_raw);
 
-            cellTemperatures[i] = static_cast<float>(temperature_signed) * MAIN_ADC_RESOLUTION_GPIO;
+            gpiox_voltage = static_cast<float>(gpiox_signed) * MAIN_AUX_ADC_RESOLUTION_GPIO;
+            r_ntc = ((R_VOLTAGE_DIVIDER * gpiox_voltage) / (v_tsref - gpiox_voltage));
+            cellTemperatures[i] = (1 / ((1 / NTC_B) * logf(r_ntc / NTC_R0) + (1 / NTC_T0))) - CELCIUS_KELVIN_OFFSET;
+            //cellTemperatures[i] = gpiox_voltage;
         }
 
         return Status::COMPLETED;
