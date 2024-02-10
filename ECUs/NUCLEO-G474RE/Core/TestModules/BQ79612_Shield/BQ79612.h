@@ -1,12 +1,14 @@
 #pragma once
 
-#include <util/Common.h>
+#include "BQ79612_Comm_Data.h"
+#include "BQ79612_Register_Addresses.h"
+#include "BQ79612_Register_Data.h"
+#include "main.h"
+#include <IO/GPIO/Pin.h>
+#include <cmath>
 #include <data/checksum/CRC.h>
 #include <parallel/Delay.h>
-#include <IO/GPIO/Pin.h>
-#include "main.h"
-#include "BQ79612_Comm_Data.h"
-#include "BQ79612_Register_Data.h"
+#include <util/Common.h>
 
 namespace BQ79612 {
 
@@ -20,8 +22,15 @@ namespace BQ79612 {
     const uint8_t DATA_BUFFER_SIZE = static_cast<uint8_t>(TEST_DEVICE_COUNT * MAX_DATA_SIZE_RESPONSE_FRAME);
     inline constexpr Parallel::TimeMS HOST_UART_TIMEOUT = 10;
 
-    const float MAIN_ADC_RESOLUTION_VOLTAGE = 190.73;
-    const float MAIN_ADC_RESOLUTION_GPIO = 152.59;
+    const float CELCIUS_KELVIN_OFFSET = 273.15;
+    const float R_VOLTAGE_DIVIDER = 10000.0;
+    const float NTC_B = 3422.0; // optimized for a temperature range of 25°C - 75°C
+    const float NTC_T0 = CELCIUS_KELVIN_OFFSET + 25.0;
+    const float NTC_R0                = 10000.0;
+
+    const float MAIN_AUX_ADC_RESOLUTION_VCELL = 190.73;
+    const float MAIN_AUX_ADC_RESOLUTION_GPIO  = 152.59;
+    const float MAIN_ADC_RESOLUTION_TSREF = 169.54;
 
     class DaisyChain{
       public:
