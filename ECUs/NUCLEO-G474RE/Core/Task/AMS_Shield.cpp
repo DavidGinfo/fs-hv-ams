@@ -21,6 +21,8 @@ uint8_t devices = 3;
 
 DaisyChain ams(huart4, htim16, devices, uart_tx, uart_rx);
 
+
+// TODO wenn BQ warm wieder passt alles außer man schaltet ihn aus, dann lässt er sich zwar aufwecken, aber antwortet erst wieder auf Nachrichten wenn er bei ca 33 grad angekommen ist
 void runAMS_Shield(){
     bool status = true;
 
@@ -46,12 +48,13 @@ void runAMS_Shield(){
     if(ams.setActivateGPIOADCs(Device::STACK_DEVICE2, 2) != Status::COMPLETED)
         status = false;
 
-    // TODO unzuverlässig, funktioniert nur im debug -> irgendwo delay einbauen
     float temperatures[2] = {};
     if(ams.readCellTemperature(Device::STACK_DEVICE2, temperatures, 2) != Status::COMPLETED)
         status = false;
 
     for(;;){
+        if(ams.readCellTemperature(Device::STACK_DEVICE2, temperatures, 2) != Status::COMPLETED)
+            status = false;
         Parallel::delay(100);
     }
 }
