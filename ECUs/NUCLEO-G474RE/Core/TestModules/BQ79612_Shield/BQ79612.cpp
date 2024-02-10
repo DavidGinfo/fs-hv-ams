@@ -559,3 +559,27 @@ Status DaisyChain::readCellTemperature(Device device, float *cellTemperatures, u
 
         return Status::COMPLETED;
 }
+
+Status DaisyChain::readDieTemperature(Device device, float *dieTemperature) {
+        uint8_t sendDataDT = static_cast<uint8_t>(ADC_Ctrl1::RESET_VALUE) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
+        if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataDT, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        // TODO implement exact delay in us
+        Parallel::delay(3);
+
+        if(read(ReqType::SINGLE_DEVICE_READ, device,  ReadOnlyRegister::DIETEMP1_HI, 2) != Status::COMPLETED)
+            return Status::ERROR;
+
+        uint8_t dt_hi = 0;
+        uint8_t dt_lo = 0;
+        uint16_t dt_raw = 0;
+
+        readDataBufferByte(&dt_hi);
+        readDataBufferByte(&dt_lo);
+
+        dt_raw |= (static_cast<uint16_t>(dt_hi) << 8) | static_cast<uint16_t>(dt_lo);
+        *dieTemperature = static_cast<float>(toSigned(dt_raw)) * MAIN_ADC_RESOLUTION_DIETEMP1;
+
+        return Status::COMPLETED;
+}

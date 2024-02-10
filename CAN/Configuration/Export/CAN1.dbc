@@ -36,89 +36,32 @@ BS_:
 BU_: AMS
 
 
-BO_ 0 AMS_Shield: 2 AMS
+BO_ 2 AMS_Shield_CellVoltages: 7 AMS
+ SG_ Voltage_Cell2 : 40|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
+ SG_ Voltage_Cell1 : 24|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
+
+BO_ 1 AMS_Shield_DieTemperatures: 5 AMS
+ SG_ Temperature_Die_StackDevice2 : 22|11@1+ (0.1,0) [0|204.7] "°C" Vector__XXX
+ SG_ Temperature_Die_StackDevice1 : 11|11@1+ (0.1,0) [0|204.7] "°C" Vector__XXX
+ SG_ Temperature_Die_BaseDevice : 0|11@1+ (0.1,0) [0|204.7] "°C" Vector__XXX
+
+BO_ 0 AMS_Shield_CellTemperatures: 3 AMS
+ SG_ Temperature_Cell2 : 10|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
  SG_ Temperature_Cell1 : 0|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
 
 
 
-BA_DEF_ SG_  "Signal_Name_German" STRING ;
-BA_DEF_ SG_  "Signal_Name_English" STRING ;
-BA_DEF_ SG_  "GenSigCycleTime" INT 0 0;
-BA_DEF_ SG_  "GenSigInactiveValue" INT 0 0;
-BA_DEF_ SG_  "GenSigStartValue" FLOAT 0 0;
-BA_DEF_ BO_  "GenMsgStartDelayTime2" INT 0 1000000;
-BA_DEF_ BO_  "GenMsgSendType2" ENUM  "Zyklisch","Ereignisgesteuert","dummy","Auf Anfrage";
-BA_DEF_ BO_  "GenMsgDelayTime2" INT 0 1000000;
-BA_DEF_ BO_  "GenMsgCycleTime2" INT 0 1000000;
-BA_DEF_ BO_  "AddRemark2" STRING ;
-BA_DEF_ BO_  "GenMsgStartDelayTime" INT 0 1000000;
-BA_DEF_ BO_  "AddRemark" STRING ;
-BA_DEF_ BO_  "RequestMessage" ENUM  "no","yes";
-BA_DEF_ BO_  "Message_Longname" STRING ;
-BA_DEF_ BO_  "DiagResponse" ENUM  "no","yes";
-BA_DEF_ BO_  "DiagRequest" ENUM  "no","yes";
-BA_DEF_ BO_  "GenMsgCycleTimeActive" INT 1 100;
-BA_DEF_ BO_  "GenMsgCycleTimeFast" INT 1 50;
-BA_DEF_ BO_  "GenMsgTimeoutTime" INT 0 1000;
-BA_DEF_ BO_  "GenMsgFastOnStart" INT 10 500;
-BA_DEF_ BO_  "GenMsgDelayTime" INT 10 500;
-BA_DEF_ BO_  "GenSigSendType" ENUM  "Cyclic","OnWrite","OnChange";
-BA_DEF_ BO_  "GenMsgSendType" ENUM  "cyclic","spontaneous","adaptive";
-BA_DEF_ BO_  "GenMsgCycleTime" INT 5 1000;
-BA_DEF_ BU_  "MessageManagerUsed" ENUM  "no","yes";
-BA_DEF_ BU_  "DiagnoseStationsAdresse" HEX 0 255;
-BA_DEF_ BU_  "MCV-Nummer" STRING ;
-BA_DEF_ BU_  "ECU_Longname" STRING ;
-BA_DEF_ BU_  "NmNode" INT 0 1;
-BA_DEF_ BU_  "NodeLayerModules" STRING ;
-BA_DEF_ BU_  "CANoeStartDelay" INT 0 0;
-BA_DEF_ BU_  "CANoeJitterMin" INT 0 0;
-BA_DEF_ BU_  "CANoeJitterMax" INT 0 0;
-BA_DEF_ BU_  "CANoeDrift" INT 0 0;
-BA_DEF_ BU_  "NmStationAddress" HEX 0 0;
-BA_DEF_  "Manufacturer" ENUM  "DBAG","VAG","BMWAG";
 BA_DEF_  "BusType" STRING ;
-BA_DEF_REL_ BU_BO_REL_  "GenMsgNrOfRepetition" INT 0 999999;
-BA_DEF_REL_ BU_SG_REL_  "GenSigTimeoutTime" INT 0 0;
-BA_DEF_REL_ BU_SG_REL_  "GenSigTimeoutMsg" INT 0 0;
-BA_DEF_DEF_REL_ "GenMsgNrOfRepetition" 0;
-BA_DEF_DEF_  "Signal_Name_German" "";
-BA_DEF_DEF_  "Signal_Name_English" "";
-BA_DEF_DEF_  "GenSigCycleTime" 0;
-BA_DEF_DEF_  "GenSigInactiveValue" 0;
-BA_DEF_DEF_  "GenSigStartValue" 0;
-BA_DEF_DEF_  "GenMsgStartDelayTime2" 0;
-BA_DEF_DEF_  "GenMsgSendType2" "Zyklisch";
-BA_DEF_DEF_  "GenMsgDelayTime2" 0;
-BA_DEF_DEF_  "GenMsgCycleTime2" 0;
-BA_DEF_DEF_  "AddRemark2" "";
-BA_DEF_DEF_  "GenMsgStartDelayTime" 0;
-BA_DEF_DEF_  "AddRemark" "";
-BA_DEF_DEF_  "RequestMessage" "no";
-BA_DEF_DEF_  "Message_Longname" "";
-BA_DEF_DEF_  "DiagResponse" "no";
-BA_DEF_DEF_  "DiagRequest" "no";
-BA_DEF_DEF_  "GenMsgCycleTimeActive" 10;
-BA_DEF_DEF_  "GenMsgCycleTimeFast" 10;
-BA_DEF_DEF_  "GenMsgTimeoutTime" 0;
-BA_DEF_DEF_  "GenMsgFastOnStart" 10;
-BA_DEF_DEF_  "GenMsgDelayTime" 10;
+BA_DEF_ SG_  "GenSigSendType" ENUM  "Cyclic","OnWrite","OnWriteWithRepetition","OnChange","OnChangeWithRepetition","IfActive","IfActiveWithRepetition","NoSigSendType";
+BA_DEF_ SG_  "GenSigInactiveValue" INT 0 0;
+BA_DEF_ BO_  "GenMsgSendType" ENUM  "Cyclic","not_used","not_used","not_used","not_used","Cyclic","not_used","IfActive","NoMsgSendType";
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 0;
+BA_DEF_ BU_  "NmStationAddress" HEX 0 0;
+BA_DEF_DEF_  "BusType" "";
 BA_DEF_DEF_  "GenSigSendType" "Cyclic";
-BA_DEF_DEF_  "GenMsgSendType" "cyclic";
-BA_DEF_DEF_  "GenMsgCycleTime" 100;
-BA_DEF_DEF_REL_ "GenSigTimeoutTime" 0;
-BA_DEF_DEF_REL_ "GenSigTimeoutMsg" 0;
-BA_DEF_DEF_  "MessageManagerUsed" "yes";
-BA_DEF_DEF_  "DiagnoseStationsAdresse" 0;
-BA_DEF_DEF_  "MCV-Nummer" "";
-BA_DEF_DEF_  "ECU_Longname" "";
-BA_DEF_DEF_  "NmNode" 0;
-BA_DEF_DEF_  "NodeLayerModules" "";
-BA_DEF_DEF_  "CANoeStartDelay" 0;
-BA_DEF_DEF_  "CANoeJitterMin" 0;
-BA_DEF_DEF_  "CANoeJitterMax" 0;
-BA_DEF_DEF_  "CANoeDrift" 0;
+BA_DEF_DEF_  "GenSigInactiveValue" 0;
+BA_DEF_DEF_  "GenMsgSendType" "NoMsgSendType";
+BA_DEF_DEF_  "GenMsgCycleTime" 0;
 BA_DEF_DEF_  "NmStationAddress" 0;
-BA_DEF_DEF_  "Manufacturer" "BMWAG";
-BA_DEF_DEF_  "BusType" "CAN";
+BA_ "BusType" "";
 

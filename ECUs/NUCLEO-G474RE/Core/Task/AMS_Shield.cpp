@@ -1,5 +1,5 @@
 #include <parallel/Task.hpp>
-#include <util/Terminal.h>
+#include <IO/CAN/generated/CAN1_dbc.h>
 
 #include "Init.h"
 #include "main.h"
@@ -48,14 +48,28 @@ void runAMS_Shield(){
     if(ams.setActivateGPIOADCs(Device::STACK_DEVICE2, 2) != Status::COMPLETED)
         status = false;
 
-    float temperatures[2] = {};
-    if(ams.readCellTemperature(Device::STACK_DEVICE2, temperatures, 2) != Status::COMPLETED)
-        status = false;
+    float cellTemperatures[2] = {};
+    float dieTemperatures[3] = {};
 
     for(;;){
-        if(ams.readCellTemperature(Device::STACK_DEVICE2, temperatures, 2) != Status::COMPLETED)
+        if(ams.readCellTemperature(Device::STACK_DEVICE2, cellTemperatures, 2) != Status::COMPLETED)
             status = false;
-        Parallel::delay(100);
+        AMS_Shield_CellTemperatures::Temperature_Cell1.setPhysicalValue(cellTemperatures[0]);
+        AMS_Shield_CellTemperatures::Temperature_Cell2.setPhysicalValue(cellTemperatures[1]);
+
+        if(ams.readDieTemperature(Device::BASE_DEVICE, &dieTemperatures[0]) != Status::COMPLETED)
+            status = false;
+        AMS_Shield_DieTemperatures::Temperature_Die_BaseDevice.setPhysicalValue(dieTemperatures[0]);
+
+        if(ams.readDieTemperature(Device::STACK_DEVICE1, &dieTemperatures[1]) != Status::COMPLETED)
+            status = false;
+        AMS_Shield_DieTemperatures::Temperature_Die_BaseDevice.setPhysicalValue(dieTemperatures[1]);
+
+        if(ams.readDieTemperature(Device::STACK_DEVICE2, &dieTemperatures[2]) != Status::COMPLETED)
+            status = false;
+        AMS_Shield_DieTemperatures::Temperature_Die_BaseDevice.setPhysicalValue(dieTemperatures[2]);
+
+        Parallel::delay(1);
     }
 }
 
