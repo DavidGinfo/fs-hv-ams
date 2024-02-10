@@ -31,6 +31,10 @@ namespace BQ79612 {
     const float NTC_R0                = 10000.0;
 
     const float MAIN_AUX_ADC_RESOLUTION_VCELL = 190.73;
+    const float MAIN_AUX_ADC_RESOLUTION_BB = 30.52;
+    const float MAIN_ADC_RESOLUTION_DIETEMP1 = 0.025;
+    const float AUX_ADC_RESOLUTION_DIETEMP2 = 0.025;
+    const float AUX_ADC_RESOLUTION_BAT = 3.05;
     const float MAIN_AUX_ADC_RESOLUTION_GPIO  = 152.59;
     const float MAIN_ADC_RESOLUTION_TSREF = 169.54;
 
@@ -66,6 +70,7 @@ namespace BQ79612 {
 
         Status setActivateGPIOADCs(Device device, uint8_t activeGPIOCount);
         Status readCellTemperature(Device device, float *cellTemperatures, uint8_t cellTemperatureCount);
+        Status readDieTemperature(Device device, float *dieTemperature);
 
       private:
         UART_HandleTypeDef *uartHandle;
