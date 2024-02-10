@@ -1,7 +1,9 @@
 #pragma once
 
+#include <util/Common.h>
+
 namespace BQ79612 {
-    enum TransactionContent {
+    enum class TransactionContent : uint8_t {
         TC_INIT,
         TC_DEV_ADR,
         TC_REG_ADR,
@@ -9,7 +11,7 @@ namespace BQ79612 {
         TC_CRC
     };
 
-    enum ReqType : uint8_t {
+    enum class ReqType : uint8_t {
         SINGLE_DEVICE_READ = 0,
         SINGLE_DEVICE_WRITE = 1,
         STACK_READ = 2,
@@ -19,14 +21,14 @@ namespace BQ79612 {
         BROADCAST_WRITE_REVERSE = 6
     };
 
-    enum Ping_us : uint16_t {
+    enum class Ping_us : uint16_t {
         WAKE = 2250,
         SHUTDOWN = 8500,
         SLEEP_TO_ACTIVE = 275,
         HARDWARE_RESET = 36000
     };
 
-    enum Device : uint8_t {
+    enum class Device : uint8_t {
         BASE_DEVICE = 0,
         STACK_DEVICE1 = 1,
         STACK_DEVICE2 = 2,
@@ -51,5 +53,4 @@ namespace BQ79612 {
         ERROR = 0,
         COMPLETED = 1
     };
-
 }
