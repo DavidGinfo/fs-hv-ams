@@ -596,3 +596,23 @@ Status DaisyChain::activateADC(Device device, uint8_t config) {
 
         return Status::COMPLETED;
 }
+
+Status DaisyChain::getFaultSummary(Device device, FaultSummary *faults) {
+        if(read(ReqType::SINGLE_DEVICE_READ, device,  ReadOnlyRegister::FAULT_SUMMARY, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        uint8_t dataFS = 0;
+        readDataBufferByte(&dataFS);
+
+        uint8_t mask = 1;
+        faults->FAULT_PROT = (dataFS >> 7) & mask;
+        faults->FAULT_COMP_ADC = (dataFS >> 6) & mask;
+        faults->FAULT_OTP = (dataFS >> 5) & mask;
+        faults->FAULT_COMM = (dataFS >> 4) & mask;
+        faults->FAULT_OTUT = (dataFS >> 3) & mask;
+        faults->FAULT_OVUV = (dataFS >> 2) & mask;
+        faults->FAULT_SYS = (dataFS >> 1) & mask;
+        faults->FAULT_PWR = dataFS & mask;
+
+        return Status::COMPLETED;
+}
