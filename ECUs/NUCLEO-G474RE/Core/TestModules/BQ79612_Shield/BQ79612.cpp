@@ -495,6 +495,8 @@ Status DaisyChain::setActivateGPIOADCs(Device device, uint8_t activeGPIOCount) {
         if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::CONTROL2, &sendDataAGA, 1) != Status::COMPLETED)
             return Status::ERROR;
 
+        Parallel::delay(2);
+
         return Status::COMPLETED;
 }
 
@@ -512,17 +514,13 @@ Status DaisyChain::setActivateGPIOADCs(Device device, uint8_t activeGPIOCount) {
  * @return status code
  */
 Status DaisyChain::readCellTemperature(Device device, float *cellTemperatures, uint8_t cellTemperatureCount) {
-//        uint8_t sendDataCT = static_cast<uint8_t>(Control2::TSREF_EN);
-//        if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::CONTROL2, &sendDataCT, 1) != Status::COMPLETED)
-//            return Status::ERROR;
-
-//        sendDataCT = static_cast<uint8_t>(ADC_Ctrl1::RESET_VALUE) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
+//        uint8_t sendDataCT = static_cast<uint8_t>(ADC_Ctrl1::RESET_VALUE) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
 //        if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataCT, 1) != Status::COMPLETED)
 //            return Status::ERROR;
-
-        // TODO implement exact delay in us
-        //Parallel::delay(10);
-
+//
+//        // TODO implement exact delay in us
+//        Parallel::delay(10);
+//
         if(read(ReqType::SINGLE_DEVICE_READ, device,  ReadOnlyRegister::TSREF_HI, 2) != Status::COMPLETED)
             return Status::ERROR;
 
@@ -536,6 +534,8 @@ Status DaisyChain::readCellTemperature(Device device, float *cellTemperatures, u
 
         tsref_raw |= (static_cast<uint16_t>(tsref_hi) << 8) | static_cast<uint16_t>(tsref_lo);
         v_tsref = static_cast<float>(toSigned(tsref_raw)) * MAIN_ADC_RESOLUTION_TSREF;
+
+        Parallel::delay(2);
 
         // TODO change "static_cast<ReadOnlyRegister>(ReadOnlyRegister::GPIO1_HI + 12)" to "ReadOnlyRegister::GPIO1_HI" to generalize function
         if(read(ReqType::SINGLE_DEVICE_READ, device,  static_cast<ReadOnlyRegister>(static_cast<uint16_t>(ReadOnlyRegister::GPIO1_HI) + 12), cellTemperatureCount * 2) != Status::COMPLETED)
@@ -564,13 +564,6 @@ Status DaisyChain::readCellTemperature(Device device, float *cellTemperatures, u
 }
 
 Status DaisyChain::readDieTemperature(float *dieTemperature) {
-//        uint8_t sendDataDT = static_cast<uint8_t>(ADC_Ctrl1::RESET_VALUE) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
-//        if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataDT, 1) != Status::COMPLETED)
-//            return Status::ERROR;
-
-        // TODO implement exact delay in us
-        //Parallel::delay(3);
-
         if(read(ReqType::BROADCAST_READ, Device::MULTIPLE_DEVICES,  ReadOnlyRegister::DIETEMP1_HI, 2) != Status::COMPLETED)
             return Status::ERROR;
 
@@ -579,9 +572,11 @@ Status DaisyChain::readDieTemperature(float *dieTemperature) {
         uint16_t dt_raw = 0;
 
         for(int i = deviceCount - 1; i >= 0; i--){
+            // TODO problem hier:
             readDataBufferByte(&dt_hi);
             readDataBufferByte(&dt_lo);
 
+            dt_raw = 0;
             dt_raw |= (static_cast<uint16_t>(dt_hi) << 8) | static_cast<uint16_t>(dt_lo);
             dieTemperature[i] = static_cast<float>(toSigned(dt_raw)) * MAIN_ADC_RESOLUTION_DIETEMP1;
         }
@@ -589,9 +584,12 @@ Status DaisyChain::readDieTemperature(float *dieTemperature) {
         return Status::COMPLETED;
 }
 
-Status DaisyChain::activateADC(Device device, uint8_t config) {
-        uint8_t sendDataAADC = static_cast<uint8_t>(ADC_Ctrl1::RESET_VALUE) | static_cast<uint8_t>(config);
-        if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataAADC, 1) != Status::COMPLETED)
+Status DaisyChain::activateADCs(uint8_t config) {
+        if(write(ReqType::SINGLE_DEVICE_WRITE, Device::BASE_DEVICE, ReadWriteRegister::ADC_CTRL1, &config, 1) != Status::COMPLETED)
+            return Status::ERROR;
+        if(write(ReqType::SINGLE_DEVICE_WRITE, Device::STACK_DEVICE1, ReadWriteRegister::ADC_CTRL1, &config, 1) != Status::COMPLETED)
+            return Status::ERROR;
+        if(write(ReqType::SINGLE_DEVICE_WRITE, Device::STACK_DEVICE2, ReadWriteRegister::ADC_CTRL1, &config, 1) != Status::COMPLETED)
             return Status::ERROR;
 
         return Status::COMPLETED;
@@ -605,14 +603,14 @@ Status DaisyChain::getFaultSummary(Device device, FaultSummary *faults) {
         readDataBufferByte(&dataFS);
 
         uint8_t mask = 1;
-        faults->FAULT_PROT = (dataFS >> 7) & mask;
-        faults->FAULT_COMP_ADC = (dataFS >> 6) & mask;
-        faults->FAULT_OTP = (dataFS >> 5) & mask;
-        faults->FAULT_COMM = (dataFS >> 4) & mask;
-        faults->FAULT_OTUT = (dataFS >> 3) & mask;
-        faults->FAULT_OVUV = (dataFS >> 2) & mask;
-        faults->FAULT_SYS = (dataFS >> 1) & mask;
-        faults->FAULT_PWR = dataFS & mask;
+        faults->faultProt      = (dataFS >> 7) & mask;
+        faults->faultCompADC   = (dataFS >> 6) & mask;
+        faults->faultOTP       = (dataFS >> 5) & mask;
+        faults->faultComm      = (dataFS >> 4) & mask;
+        faults->faultOTUT      = (dataFS >> 3) & mask;
+        faults->faultOVUV      = (dataFS >> 2) & mask;
+        faults->faultSys       = (dataFS >> 1) & mask;
+        faults->faultPwr       = dataFS & mask;
 
         return Status::COMPLETED;
 }
