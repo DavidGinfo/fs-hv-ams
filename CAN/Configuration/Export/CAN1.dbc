@@ -64,4 +64,7 @@ BA_DEF_DEF_  "GenMsgSendType" "NoMsgSendType";
 BA_DEF_DEF_  "GenMsgCycleTime" 0;
 BA_DEF_DEF_  "NmStationAddress" 0;
 BA_ "BusType" "";
+BA_ "GenMsgCycleTime" BO_ 2 50;
+BA_ "GenMsgCycleTime" BO_ 1 50;
+BA_ "GenMsgCycleTime" BO_ 0 50;
 

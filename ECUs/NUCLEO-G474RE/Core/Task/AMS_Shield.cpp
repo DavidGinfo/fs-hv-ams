@@ -17,57 +17,115 @@ Parallel::NormalTask amsShieldTask(&runAMS_Shield, "AMS-Shield");
 GPIO::Pin uart_tx = GPIO::Pin(Host_UART_TX_GPIO_Port, Host_UART_TX_Pin);
 GPIO::Pin uart_rx = GPIO::Pin(Host_UART_RX_GPIO_Port, Host_UART_RX_Pin);
 
-uint8_t devices = 3;
+//uint8_t devices = 3;
 
-DaisyChain ams(huart4, htim16, devices, uart_tx, uart_rx);
+//DaisyChain ams(huart4, htim16, devices, uart_tx, uart_rx);
+
+class AMS_Shield  {
+    DaisyChain chain;
+
+  public:
+    explicit AMS_Shield(uint8_t devices) : chain(huart4, htim16, devices, uart_tx, uart_rx){}
+
+    void generalStartup(){
+        chain.init();
+
+        chain.ping(Ping_us::WAKE);
+        // wait min 10ms + 600us per device wake propagation
+        Parallel::delay(25);
+        chain.ping(Ping_us::WAKE);
+        // wait min 10ms + 600us per device wake propagation, dont know why have to to this twice
+        Parallel::delay(25);
+
+        if(chain.performAutoadressing() != Status::COMPLETED)
+            Debug::exception();
+    }
+
+    void startShield(){
+        uint8_t cfg = static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
+        chain.activateADC(Device::STACK_DEVICE2, cfg);
+        Parallel::delay(3);
+
+        chain.activateVCs(Device::STACK_DEVICE2, Active_Cell::_6S);
+
+        chain.setActivateGPIOADCs(Device::STACK_DEVICE2, 2);
+    }
+
+    void readVoltages(){
+        float voltages[2] = {};
+        if(chain.readCellVoltages(Device::STACK_DEVICE2, voltages, 2) != Status::COMPLETED)
+            Debug::exception();
+
+        AMS_Shield_CellVoltages::Voltage_Cell1.setPhysicalValue(voltages[0]);
+        AMS_Shield_CellVoltages::Voltage_Cell2.setPhysicalValue(voltages[1]);
+    }
+
+    void readTemperatures(){
+        float temperatures[2];
+        if(chain.readCellTemperature(Device::STACK_DEVICE2, temperatures, 2) != Status::COMPLETED)
+            Debug::exception();
+
+        AMS_Shield_CellTemperatures::Temperature_Cell1.setPhysicalValue(temperatures[0]);
+        AMS_Shield_CellTemperatures::Temperature_Cell2.setPhysicalValue(temperatures[1]);
+    }
+
+    void readDieTemperatures(){
+        float temperatures[3];
+        if(chain.readDieTemperature(temperatures) != Status::COMPLETED)
+            Debug::exception();
+
+        AMS_Shield_DieTemperatures::Temperature_Die_BaseDevice.setPhysicalValue(temperatures[0]);
+        AMS_Shield_DieTemperatures::Temperature_Die_StackDevice1.setPhysicalValue(temperatures[1]);
+        AMS_Shield_DieTemperatures::Temperature_Die_StackDevice2.setPhysicalValue(temperatures[2]);
+    }
+
+    void readFaults(){
+
+    }
+};
 
 
 // TODO wenn BQ warm wieder passt alles außer man schaltet ihn aus, dann lässt er sich zwar aufwecken, aber antwortet erst wieder auf Nachrichten wenn er bei ca 33 grad angekommen ist
 void runAMS_Shield(){
-    bool status = true;
-
-    ams.init();
-
-    ams.ping(Ping_us::SHUTDOWN);
-    ams.ping(Ping_us::WAKE);
-    Parallel::delay(100);
-    ams.ping(Ping_us::WAKE);
-    // wait min 10ms + 600us per device wake propagation
-    Parallel::delay(100);
-
-    if(ams.performAutoadressing() != Status::COMPLETED)
-        status = false;
-
 //    if(ams.activateVCs(Device::STACK_DEVICE2, Active_Cell::_6S) != Status::COMPLETED)
 //        status = false;
-//
+
 //    float voltages[2] = {};
 //    if(ams.readCellVoltages(Device::STACK_DEVICE2, voltages, 2) != Status::COMPLETED)
 //        status = false;
+//
+//    if(ams.setActivateGPIOADCs(Device::STACK_DEVICE2, 2) != Status::COMPLETED)
+//        status = false;
 
-    if(ams.setActivateGPIOADCs(Device::STACK_DEVICE2, 2) != Status::COMPLETED)
-        status = false;
+//    float cellTemperatures[2] = {};
+//    float dieTemperatures[3] = {};
 
-    float cellTemperatures[2] = {};
-    float dieTemperatures[3] = {};
+    AMS_Shield amsShield(3);
+
+    amsShield.generalStartup();
+    amsShield.startShield();
 
     for(;;){
-        if(ams.readCellTemperature(Device::STACK_DEVICE2, cellTemperatures, 2) != Status::COMPLETED)
-            status = false;
-        AMS_Shield_CellTemperatures::Temperature_Cell1.setPhysicalValue(cellTemperatures[0]);
-        AMS_Shield_CellTemperatures::Temperature_Cell2.setPhysicalValue(cellTemperatures[1]);
+//        if(ams.readCellTemperature(Device::STACK_DEVICE2, cellTemperatures, 2) != Status::COMPLETED)
+//            status = false;
+//        AMS_Shield_CellTemperatures::Temperature_Cell1.setPhysicalValue(cellTemperatures[0]);
+//        AMS_Shield_CellTemperatures::Temperature_Cell2.setPhysicalValue(cellTemperatures[1]);
 
-        if(ams.readDieTemperature(Device::BASE_DEVICE, &dieTemperatures[0]) != Status::COMPLETED)
-            status = false;
-        AMS_Shield_DieTemperatures::Temperature_Die_BaseDevice.setPhysicalValue(dieTemperatures[0]);
+//        if(ams.readDieTemperature(Device::BASE_DEVICE, &dieTemperatures[0]) != Status::COMPLETED)
+//            status = false;
+//        AMS_Shield_DieTemperatures::Temperature_Die_BaseDevice.setPhysicalValue(dieTemperatures[0]);
+//
+//        if(ams.readDieTemperature(Device::STACK_DEVICE1, &dieTemperatures[1]) != Status::COMPLETED)
+//            status = false;
+//        AMS_Shield_DieTemperatures::Temperature_Die_StackDevice1.setPhysicalValue(dieTemperatures[1]);
+//
+//        if(ams.readDieTemperature(Device::STACK_DEVICE2, &dieTemperatures[2]) != Status::COMPLETED)
+//            status = false;
+//        AMS_Shield_DieTemperatures::Temperature_Die_StackDevice2.setPhysicalValue(dieTemperatures[2]);
 
-        if(ams.readDieTemperature(Device::STACK_DEVICE1, &dieTemperatures[1]) != Status::COMPLETED)
-            status = false;
-        AMS_Shield_DieTemperatures::Temperature_Die_BaseDevice.setPhysicalValue(dieTemperatures[1]);
-
-        if(ams.readDieTemperature(Device::STACK_DEVICE2, &dieTemperatures[2]) != Status::COMPLETED)
-            status = false;
-        AMS_Shield_DieTemperatures::Temperature_Die_BaseDevice.setPhysicalValue(dieTemperatures[2]);
+        amsShield.readTemperatures();
+        amsShield.readDieTemperatures();
+        amsShield.readFaults();
 
         Parallel::delay(1);
     }
