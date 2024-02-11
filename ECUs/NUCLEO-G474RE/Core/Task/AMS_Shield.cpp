@@ -80,7 +80,19 @@ class AMS_Shield  {
     }
 
     void readFaults(){
+        FaultSummary faults;
 
+        if(chain.getFaultSummary(Device::BASE_DEVICE, &faults) != Status::COMPLETED)
+            Debug::exception();
+
+        AMS_Faults1::Fault_Protection.setPhysicalValue(faults.FAULT_PROT);
+        AMS_Faults1::Fault_ADC_Comparison.setPhysicalValue(faults.FAULT_COMP_ADC);
+        AMS_Faults1::Fault_OTP.setPhysicalValue(faults.FAULT_OTP);
+        AMS_Faults1::Fault_Communication.setPhysicalValue(faults.FAULT_COMM);
+        AMS_Faults1::Fault_OTUT.setPhysicalValue(faults.FAULT_OTUT);
+        AMS_Faults1::Fault_OVOV.setPhysicalValue(faults.FAULT_OVUV);
+        AMS_Faults1::Fault_System.setPhysicalValue(faults.FAULT_SYS);
+        AMS_Faults1::Fault_Power_Rail.setPhysicalValue(faults.FAULT_PWR);
     }
 };
 

@@ -36,6 +36,16 @@ BS_:
 BU_: AMS
 
 
+BO_ 3 AMS_Faults1: 1 AMS
+ SG_ Fault_Power_Rail : 7|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Fault_System : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Fault_OVOV : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Fault_OTUT : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Fault_Communication : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Fault_OTP : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Fault_ADC_Comparison : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Fault_Protection : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+
 BO_ 2 AMS_Shield_CellVoltages: 7 AMS
  SG_ Voltage_Cell2 : 40|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
  SG_ Voltage_Cell1 : 24|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
@@ -64,6 +74,7 @@ BA_DEF_DEF_  "GenMsgSendType" "NoMsgSendType";
 BA_DEF_DEF_  "GenMsgCycleTime" 0;
 BA_DEF_DEF_  "NmStationAddress" 0;
 BA_ "BusType" "";
+BA_ "GenMsgCycleTime" BO_ 3 50;
 BA_ "GenMsgCycleTime" BO_ 2 50;
 BA_ "GenMsgCycleTime" BO_ 1 50;
 BA_ "GenMsgCycleTime" BO_ 0 50;

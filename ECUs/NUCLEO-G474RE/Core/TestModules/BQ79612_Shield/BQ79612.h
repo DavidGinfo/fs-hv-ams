@@ -74,6 +74,8 @@ namespace BQ79612 {
 
         Status readDieTemperature(float *dieTemperature);
 
+        Status getFaultSummary(Device device, FaultSummary *faults);
+
       private:
         UART_HandleTypeDef *uartHandle;
         TIM_HandleTypeDef *timHandle;
