@@ -64,7 +64,7 @@ namespace BQ79612 {
         // TODO implement
         Status getFaults();
 
-        Status activateADC(Device device, uint8_t config);
+        Status activateADCs(uint8_t config);
 
         Status activateVCs(Device device, Active_Cell activeVCConfig);
         Status readCellVoltages(Device device, float *cellVoltages, uint8_t cellVoltageCount);

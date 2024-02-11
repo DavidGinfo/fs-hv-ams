@@ -30,12 +30,14 @@ class AMS_Shield  {
     void generalStartup(){
         chain.init();
 
+        chain.ping(Ping_us::HARDWARE_RESET);
+        Parallel::delay(100);
         chain.ping(Ping_us::WAKE);
         // wait min 10ms + 600us per device wake propagation
-        Parallel::delay(25);
+        Parallel::delay(100);
         chain.ping(Ping_us::WAKE);
         // wait min 10ms + 600us per device wake propagation, dont know why have to to this twice
-        Parallel::delay(25);
+        Parallel::delay(100);
 
         if(chain.performAutoadressing() != Status::COMPLETED)
             Debug::exception();
@@ -43,8 +45,8 @@ class AMS_Shield  {
 
     void startShield(){
         uint8_t cfg = static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
-        chain.activateADC(Device::STACK_DEVICE2, cfg);
-        Parallel::delay(3);
+        chain.activateADCs(cfg);
+        Parallel::delay(10);
 
         chain.activateVCs(Device::STACK_DEVICE2, Active_Cell::_6S);
 
@@ -85,14 +87,14 @@ class AMS_Shield  {
         if(chain.getFaultSummary(Device::BASE_DEVICE, &faults) != Status::COMPLETED)
             Debug::exception();
 
-        AMS_Faults1::Fault_Protection.setPhysicalValue(faults.FAULT_PROT);
-        AMS_Faults1::Fault_ADC_Comparison.setPhysicalValue(faults.FAULT_COMP_ADC);
-        AMS_Faults1::Fault_OTP.setPhysicalValue(faults.FAULT_OTP);
-        AMS_Faults1::Fault_Communication.setPhysicalValue(faults.FAULT_COMM);
-        AMS_Faults1::Fault_OTUT.setPhysicalValue(faults.FAULT_OTUT);
-        AMS_Faults1::Fault_OVOV.setPhysicalValue(faults.FAULT_OVUV);
-        AMS_Faults1::Fault_System.setPhysicalValue(faults.FAULT_SYS);
-        AMS_Faults1::Fault_Power_Rail.setPhysicalValue(faults.FAULT_PWR);
+        AMS_Faults1::Fault_Protection.setPhysicalValue(faults.faultProt);
+        AMS_Faults1::Fault_ADC_Comparison.setPhysicalValue(faults.faultCompADC);
+        AMS_Faults1::Fault_OTP.setPhysicalValue(faults.faultOTP);
+        AMS_Faults1::Fault_Communication.setPhysicalValue(faults.faultComm);
+        AMS_Faults1::Fault_OTUT.setPhysicalValue(faults.faultOTUT);
+        AMS_Faults1::Fault_OVOV.setPhysicalValue(faults.faultOVUV);
+        AMS_Faults1::Fault_System.setPhysicalValue(faults.faultSys);
+        AMS_Faults1::Fault_Power_Rail.setPhysicalValue(faults.faultPwr);
     }
 };
 
