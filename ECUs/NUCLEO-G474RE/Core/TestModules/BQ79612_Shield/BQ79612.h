@@ -40,11 +40,11 @@ namespace BQ79612 {
 
     class DaisyChain{
       public:
-        explicit DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
-
         DaisyChain(DaisyChain &) = delete;
 
         DaisyChain(DaisyChain &&) = delete;
+
+        explicit DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
 
         void init();
 
@@ -64,13 +64,15 @@ namespace BQ79612 {
         // TODO implement
         Status getFaults();
 
-        // TODO implement
+        Status activateADC(Device device, uint8_t config);
+
         Status activateVCs(Device device, Active_Cell activeVCConfig);
         Status readCellVoltages(Device device, float *cellVoltages, uint8_t cellVoltageCount);
 
         Status setActivateGPIOADCs(Device device, uint8_t activeGPIOCount);
         Status readCellTemperature(Device device, float *cellTemperatures, uint8_t cellTemperatureCount);
-        Status readDieTemperature(Device device, float *dieTemperature);
+
+        Status readDieTemperature(float *dieTemperature);
 
       private:
         UART_HandleTypeDef *uartHandle;
