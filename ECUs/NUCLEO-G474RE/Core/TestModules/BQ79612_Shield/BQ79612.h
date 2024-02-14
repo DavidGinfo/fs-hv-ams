@@ -132,5 +132,8 @@ namespace BQ79612 {
 
         Status writeRegisters(ReqType writeCommandType, Device device, uint16_t startRegister, uint8_t *data, uint8_t dataLength);
         Status readRegisters(ReqType readCommandType, Device device, uint16_t startRegister, uint8_t registerCount);
+
+
+        Status act(Device device);
     };
 }

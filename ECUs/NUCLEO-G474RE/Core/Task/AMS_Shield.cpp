@@ -45,12 +45,13 @@ class AMS_Shield  {
 
     void startShield(){
         uint8_t cfg = static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
-        chain.activateADCs(cfg);
         Parallel::delay(10);
 
         chain.activateVCs(Device::STACK_DEVICE2, Active_Cell::_6S);
 
         chain.setActivateGPIOADCs(Device::STACK_DEVICE2, 2);
+
+        chain.activateADCs(cfg);
     }
 
     void readVoltages(){
@@ -138,6 +139,7 @@ void runAMS_Shield(){
 //        AMS_Shield_DieTemperatures::Temperature_Die_StackDevice2.setPhysicalValue(dieTemperatures[2]);
 
         amsShield.readTemperatures();
+        amsShield.readVoltages();
         amsShield.readDieTemperatures();
         amsShield.readFaults();
 
