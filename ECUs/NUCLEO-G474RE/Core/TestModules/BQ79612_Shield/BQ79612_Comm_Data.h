@@ -49,8 +49,9 @@ namespace BQ79612 {
     };
 
     // TODO assign proper status codes
-    enum Status : uint8_t {
+    enum Status : uint16_t {
         ERROR = 0,
-        COMPLETED = 1
+        COMPLETED = 1,
+        COMM_ERROR = 2
     };
 }

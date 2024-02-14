@@ -459,9 +459,9 @@ Status DaisyChain::readCellVoltages(Device device, float *cellVoltages, uint8_t 
 //        uint8_t sendDataRCV = static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
 //        if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataRCV, 1) != Status::COMPLETED)
 //            return Status::ERROR;
-
-        // TODO implement exact delay in us
-        //Parallel::delay(2);
+//
+//        // TODO implement exact delay in us
+//        Parallel::delay(2);
 
         // read cell voltages from BQ
         if(read(ReqType::SINGLE_DEVICE_READ, device,  static_cast<ReadOnlyRegister>(static_cast<uint8_t>(ReadOnlyRegister::VCELL1_LO) - (cellVoltageCount * 2 - 1)), cellVoltageCount * 2) != Status::COMPLETED)
@@ -500,8 +500,14 @@ Status DaisyChain::setActivateGPIOADCs(Device device, uint8_t activeGPIOCount) {
         return Status::COMPLETED;
 }
 
+Status DaisyChain::act(Device device){
+        uint8_t sendDataRCV = static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
+        return static_cast<Status>(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataRCV, 1) != Status::COMPLETED);
+
+}
+
 // TODO function is not generic in terms of the GPIOs to read, this is because of the shield NTCs, must be changed later
-// TODO make sure that the wanted gpios are corretly activatated and through an error if not
+// TODO make sure that the wanted gpios are corretly activatated and through an error if not, also check ADC config
 // TODO write more generic version which can read back cell temperatures
 /**
  * This function reads back a the cell temperatures of the wanted device in the chain.
@@ -514,13 +520,6 @@ Status DaisyChain::setActivateGPIOADCs(Device device, uint8_t activeGPIOCount) {
  * @return status code
  */
 Status DaisyChain::readCellTemperature(Device device, float *cellTemperatures, uint8_t cellTemperatureCount) {
-//        uint8_t sendDataCT = static_cast<uint8_t>(ADC_Ctrl1::RESET_VALUE) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
-//        if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataCT, 1) != Status::COMPLETED)
-//            return Status::ERROR;
-//
-//        // TODO implement exact delay in us
-//        Parallel::delay(10);
-//
         if(read(ReqType::SINGLE_DEVICE_READ, device,  ReadOnlyRegister::TSREF_HI, 2) != Status::COMPLETED)
             return Status::ERROR;
 
@@ -572,7 +571,6 @@ Status DaisyChain::readDieTemperature(float *dieTemperature) {
         uint16_t dt_raw = 0;
 
         for(int i = deviceCount - 1; i >= 0; i--){
-            // TODO problem hier:
             readDataBufferByte(&dt_hi);
             readDataBufferByte(&dt_lo);
 
@@ -584,15 +582,16 @@ Status DaisyChain::readDieTemperature(float *dieTemperature) {
         return Status::COMPLETED;
 }
 
+// TODO check if GPIO and VC configuration already took place
+// more generic function which could config specific devices
+/**
+ * Must be called and only called after VC and GPIOs are configured
+ *
+ * @param config
+ * @return
+ */
 Status DaisyChain::activateADCs(uint8_t config) {
-        if(write(ReqType::SINGLE_DEVICE_WRITE, Device::BASE_DEVICE, ReadWriteRegister::ADC_CTRL1, &config, 1) != Status::COMPLETED)
-            return Status::ERROR;
-        if(write(ReqType::SINGLE_DEVICE_WRITE, Device::STACK_DEVICE1, ReadWriteRegister::ADC_CTRL1, &config, 1) != Status::COMPLETED)
-            return Status::ERROR;
-        if(write(ReqType::SINGLE_DEVICE_WRITE, Device::STACK_DEVICE2, ReadWriteRegister::ADC_CTRL1, &config, 1) != Status::COMPLETED)
-            return Status::ERROR;
-
-        return Status::COMPLETED;
+        return write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::ADC_CTRL1, &config, 1);
 }
 
 Status DaisyChain::getFaultSummary(Device device, FaultSummary *faults) {
