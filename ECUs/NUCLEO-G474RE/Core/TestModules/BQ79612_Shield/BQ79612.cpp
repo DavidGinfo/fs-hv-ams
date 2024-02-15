@@ -456,30 +456,31 @@ Status DaisyChain::activateVCs(Device device, Active_Cell activeVCConfig) {
 
 Status DaisyChain::readCellVoltages(Device device, float *cellVoltages, uint8_t cellVoltageCount) {
         // configure main adc in continous run mode and start adc
-//        uint8_t sendDataRCV = static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
-//        if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataRCV, 1) != Status::COMPLETED)
-//            return Status::ERROR;
-//
-//        // TODO implement exact delay in us
-//        Parallel::delay(2);
+        uint8_t sendDataRCV = static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
+        if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataRCV, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        // TODO implement exact delay in us
+        Parallel::delay(10);
 
         // read cell voltages from BQ
-        if(read(ReqType::SINGLE_DEVICE_READ, device,  static_cast<ReadOnlyRegister>(static_cast<uint8_t>(ReadOnlyRegister::VCELL1_LO) - (cellVoltageCount * 2 - 1)), cellVoltageCount * 2) != Status::COMPLETED)
+        if(read(ReqType::SINGLE_DEVICE_READ, device,  static_cast<ReadOnlyRegister>(static_cast<uint16_t>(ReadOnlyRegister::VCELL1_LO) - (cellVoltageCount * 2 - 1)), cellVoltageCount * 2) != Status::COMPLETED)
             return Status::ERROR;
 
         // write cell voltages in provided buffer
+        // TODO werte auf 0 zurücksetzen
         uint16_t voltage_raw = 0;
         int16_t voltage_signed = 0;
         uint8_t v_hi = 0;
         uint8_t v_lo = 0;
-        for(uint8_t i = 0; i < cellVoltageCount; i++){
+        for(int8_t i = cellVoltageCount - 1; i >= 0; i--){
             readDataBufferByte(&v_hi);
             readDataBufferByte(&v_lo);
 
             voltage_raw |= (static_cast<uint16_t>(v_hi) << 8) | static_cast<uint16_t>(v_lo);
             voltage_signed = toSigned(voltage_raw);
 
-            cellVoltages[i] = static_cast<float>(voltage_signed) * MAIN_AUX_ADC_RESOLUTION_VCELL;
+            cellVoltages[i] = static_cast<float>(voltage_signed) * MAIN_AUX_ADC_RESOLUTION_VCELL / FACTOR_MICRO;
         }
 
         return Status::COMPLETED;
@@ -498,12 +499,6 @@ Status DaisyChain::setActivateGPIOADCs(Device device, uint8_t activeGPIOCount) {
         Parallel::delay(2);
 
         return Status::COMPLETED;
-}
-
-Status DaisyChain::act(Device device){
-        uint8_t sendDataRCV = static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
-        return static_cast<Status>(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataRCV, 1) != Status::COMPLETED);
-
 }
 
 // TODO function is not generic in terms of the GPIOs to read, this is because of the shield NTCs, must be changed later
@@ -547,6 +542,7 @@ Status DaisyChain::readCellTemperature(Device device, float *cellTemperatures, u
         float gpiox_voltage  = 0;
         float r_ntc = 0;
 
+        // TODO werte zurücksetzen auf 0
         for(uint8_t i = 0; i < cellTemperatureCount; i++){
             readDataBufferByte(&gpiox_hi);
             readDataBufferByte(&gpiox_lo);
