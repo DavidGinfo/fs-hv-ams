@@ -25,6 +25,7 @@ namespace BQ79612 {
     inline constexpr Parallel::TimeMS HOST_UART_TIMEOUT = 10;
 
     const float CELCIUS_KELVIN_OFFSET = 273.15;
+    const float FACTOR_MICRO = 1000000;
     const float R_VOLTAGE_DIVIDER = 10000.0;
     const float NTC_B = 3422.0; // optimized for a temperature range of 25°C - 75°C
     const float NTC_T0 = CELCIUS_KELVIN_OFFSET + 25.0;
