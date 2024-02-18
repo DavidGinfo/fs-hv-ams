@@ -1,16 +1,16 @@
 #pragma once
 
 #include "BQ79612_Comm_Data.h"
-#include "BQ79612_Register_Addresses.h"
 #include "BQ79612_OTPRegister_Data.h"
-#include "BQ79612_ReadWriteRegister_Data.h"
 #include "BQ79612_ReadOnlyRegister_Data.h"
+#include "BQ79612_ReadWriteRegister_Data.h"
+#include "BQ79612_Register_Addresses.h"
+#include "IO/GPIO/Pin.h"
+#include "data/checksum/CRC.h"
 #include "main.h"
-#include <IO/GPIO/Pin.h>
+#include "parallel/Delay.h"
+#include "util/Common.h"
 #include <cmath>
-#include <data/checksum/CRC.h>
-#include <parallel/Delay.h>
-#include <util/Common.h>
 
 namespace BQ79612 {
 

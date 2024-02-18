@@ -1,4 +1,4 @@
-#include "BQ79612.h"
+#include "../include/BQ79612.h"
 
 using namespace BQ79612;
 

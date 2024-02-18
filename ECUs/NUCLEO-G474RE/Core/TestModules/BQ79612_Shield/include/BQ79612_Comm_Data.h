@@ -1,6 +1,6 @@
 #pragma once
 
-#include <util/Common.h>
+#include "util/Common.h"
 
 namespace BQ79612 {
     enum class TransactionContent : uint8_t {
