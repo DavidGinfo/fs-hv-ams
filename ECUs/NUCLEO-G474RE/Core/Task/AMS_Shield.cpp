@@ -1,9 +1,9 @@
 #include <parallel/Task.hpp>
 #include <IO/CAN/generated/CAN1_dbc.h>
 
+#include "../TestModules/BQ79612_Shield/include/BQ79612.h"
 #include "Init.h"
 #include "main.h"
-#include "../TestModules/BQ79612_Shield/BQ79612.h"
 
 using namespace BQ79612;
 

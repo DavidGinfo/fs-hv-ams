@@ -1,6 +1,6 @@
 #pragma once
 
-#include <util/Common.h>
+#include "util/Common.h"
 
 namespace BQ79612 {
     const uint8_t RESET_VALUE_0 = 0x00;

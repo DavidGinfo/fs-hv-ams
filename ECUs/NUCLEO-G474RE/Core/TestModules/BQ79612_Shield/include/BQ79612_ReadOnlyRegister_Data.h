@@ -1,6 +1,6 @@
 #pragma once
 
-#include <util/Common.h>
+#include "util/Common.h"
 
 namespace BQ79612 {
     struct [[maybe_unused]] FaultSummary{
