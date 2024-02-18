@@ -1,20 +1,15 @@
 #pragma once
 
-#include "main.h"
-
 #include "BQ79612_Comm_Data.h"
 #include "BQ79612_OTPRegister_Data.h"
 #include "BQ79612_ReadOnlyRegister_Data.h"
 #include "BQ79612_ReadWriteRegister_Data.h"
 #include "BQ79612_Register_Addresses.h"
-
-#include <IO/GPIO/Pin.h>
-#include <data/checksum/CRC.h>
-#include <parallel/Delay.h>
-#include <parallel/notification/BinaryChannel.h>
-#include <util/Common.h>
-#include <IO/UART/CRXPort.h>
-
+#include "IO/GPIO/Pin.h"
+#include "data/checksum/CRC.h"
+#include "main.h"
+#include "parallel/Delay.h"
+#include "util/Common.h"
 #include <cmath>
 
 namespace BQ79612 {
@@ -27,7 +22,7 @@ namespace BQ79612 {
     const uint8_t TEST_DEVICE_COUNT = 3;
     const uint8_t BUFFER_SIZE = static_cast<uint8_t>(TEST_DEVICE_COUNT * MAX_LENGTH_TRANSACTION_FRAME);
     const uint8_t DATA_BUFFER_SIZE = static_cast<uint8_t>(TEST_DEVICE_COUNT * MAX_DATA_SIZE_RESPONSE_FRAME);
-    inline constexpr Parallel::TimeMS HOST_UART_TIMEOUT = 100;
+    inline constexpr Parallel::TimeMS HOST_UART_TIMEOUT = 10;
 
     const float CELCIUS_KELVIN_OFFSET = 273.15;
     const float FACTOR_MICRO = 1000000;
@@ -46,33 +41,13 @@ namespace BQ79612 {
 
     class DaisyChain{
       public:
-        uint8_t deviceCount = 0;
-
         DaisyChain(DaisyChain &) = delete;
 
         DaisyChain(DaisyChain &&) = delete;
-//
-//        explicit DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
 
-        //DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
+        explicit DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
 
-        void init(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount);
-
-        void handleData(uint8_t *data, uint16_t length, bool idle);
-
-        explicit DaisyChain(UART::CRXPort *uartPort, Parallel::BinaryChannel &channel, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
-
-        void handleUARTInterrupt(UART::CallbackType callbackType);
-
-        UART::CRXPort *getUartCRXPort(){
-            return this->uartPort;
-        }
-
-        uint8_t getReceiveBufferSize(){
-            return this->receiveBufferSize;
-        }
-
-        void processDataIfComplete();
+        void init();
 
         // TODO outsource generic abstraction for hw timer functionality to library
         // TODO implement clean solution for exact delay in us (with rtos and HW timer in combination), commit tim handle via constructor
@@ -83,49 +58,31 @@ namespace BQ79612 {
         Status read(ReqType readCommandType, Device device, ReadWriteRegister startRegister, uint8_t registerCount);
         Status read(ReqType readCommandType, Device device, ReadOnlyRegister startRegister, uint8_t registerCount);
 
+        // TODO test if the pointer passes correctly through the layers
         Status readDataBuffer(uint8_t *value);
 
-        void wake();
-        void sleep();
-        void shutdown();
-
-        void readDeviceIDs();
-
         Status performAutoadressing();
+        // TODO implement
+        Status getFaults();
+
         Status activateADCs(uint8_t config);
+
         Status activateVCs(Device device, Active_Cell activeVCConfig);
         Status readCellVoltages(Device device, float *cellVoltages, uint8_t cellVoltageCount);
-        Status setActivateGPIOADCs(Device device);
+
+        Status setActivateGPIOADCs(Device device, uint8_t activeGPIOCount);
         Status readCellTemperature(Device device, float *cellTemperatures, uint8_t cellTemperatureCount);
+
         Status readDieTemperature(float *dieTemperature);
+
         Status getFaultSummary(Device device, FaultSummary *faults);
 
-//        Status performAutoadressing();
-//
-//        Status activateADCs(uint8_t config);
-//
-//        Status activateVCs(Device device, Active_Cell activeVCConfig);
-//        Status readCellVoltages(Device device, float *cellVoltages, uint8_t cellVoltageCount);
-//
-//        Status setActivateGPIOADCs(Device device, uint8_t activeGPIOCount);
-//        Status readCellTemperature(Device device, float *cellTemperatures, uint8_t cellTemperatureCount);
-//
-//        Status readDieTemperature(float *dieTemperature);
-//
-//        Status getFaultSummary(Device device, FaultSummary *faults);
       private:
-        inline static volatile bool done = false;
-
-        uint16_t nextIndex = 0;
-
         UART_HandleTypeDef *uartHandle;
         TIM_HandleTypeDef *timHandle;
         GPIO::Pin UART_TX;
         GPIO::Pin UART_RX;
-
-        Parallel::BinaryNotification binaryNotification;
-
-        UART::CRXPort *uartPort;
+        uint8_t deviceCount = 0;
 
         GPIO_InitTypeDef UART_TX_GPIO_InitStruct;
 
@@ -176,5 +133,8 @@ namespace BQ79612 {
 
         Status writeRegisters(ReqType writeCommandType, Device device, uint16_t startRegister, uint8_t *data, uint8_t dataLength);
         Status readRegisters(ReqType readCommandType, Device device, uint16_t startRegister, uint8_t registerCount);
+
+
+        Status act(Device device);
     };
 }

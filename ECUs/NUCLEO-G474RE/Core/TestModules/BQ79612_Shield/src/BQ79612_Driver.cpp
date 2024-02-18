@@ -2,9 +2,6 @@
 
 using namespace BQ79612;
 
-extern uint8_t state;
-
-
 const TransactionContent SINGLE_DEVICE_COMMAND_FRAME[] = {
         TransactionContent::TC_INIT,
         TransactionContent::TC_DEV_ADR,
@@ -220,35 +217,14 @@ Status DaisyChain::execute(const TransactionContent command[], uint8_t responseF
     resetData();
 
     writeCommandFrame(command);
-
-    if(uartPort->transmitDMA(buffer, writeBufferPosition))
+    if(HAL_UART_Transmit(uartHandle, buffer, writeBufferPosition, HOST_UART_TIMEOUT) != HAL_OK){
         return Status::ERROR;
-    if(!binaryNotification.receive(10))
-        return Status::ERROR;
-
-//    if (!uartPort.transmitIT(buffer, writeBufferPosition));
-//        return Status::ERROR;
-//    if (!binaryNotification.receive(10));
-//        return Status::ERROR;
-//    state = 0;
-
-//    if(HAL_UART_Transmit(uartHandle, buffer, writeBufferPosition, HOST_UART_TIMEOUT) != HAL_OK){
-//        return Status::ERROR;
-//    }
+    }
 
     if(responseFrameCount > 0){
-//        if (!uartPort.receiveIT(buffer, receiveBufferSize));
-//            return Status::ERROR;
-//        if (!binaryNotification.receive(10));
-//            return Status::ERROR;
-//        state = 0;
-
-//        if(HAL_UART_Receive(uartHandle, buffer, receiveBufferSize, HOST_UART_TIMEOUT) != HAL_OK){
-//            return Status::ERROR;
-//        }
-
-        if(!binaryNotification.receive(100))
+        if(HAL_UART_Receive(uartHandle, buffer, receiveBufferSize, HOST_UART_TIMEOUT) != HAL_OK){
             return Status::ERROR;
+        }
         readResponseFrames(responseFrameCount);
     }
 
@@ -367,21 +343,14 @@ Status DaisyChain::readRegisters(ReqType readCommandType, Device device, uint16_
     return status;
 }
 
-DaisyChain::DaisyChain(UART::CRXPort *uartPort, Parallel::BinaryChannel &channel, GPIO::Pin uart_tx, GPIO::Pin uart_rx)
-    : uartPort(uartPort), binaryNotification(channel.createNotification()), UART_TX(uart_tx), UART_RX(uart_rx) {
-    uartPort->setDataHandler(UART::DataHandler::bind<&DaisyChain::handleData>(*this));
+DaisyChain::DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx)
+    : uartHandle(&uartHandle), timHandle(&timHandle), deviceCount(deviceCount), UART_TX(uart_tx), UART_RX(uart_rx) {
 }
 
-void DaisyChain::init(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount) {
-
-    this->uartHandle = &uartHandle;
-    this->timHandle = &timHandle;
-    this->deviceCount = deviceCount;
-
+void DaisyChain::init() {
     init_UART_TX_GPIO();
 }
 
-// implement with timex + interrupts
 Status DaisyChain::ping(Ping_us time_us) {
     HAL_UART_DeInit(uartHandle);
 
@@ -423,167 +392,113 @@ Status DaisyChain::readDataBuffer(uint8_t *value) {
     return readDataBufferByte(value);
 }
 
-
-void DaisyChain::handleUARTInterrupt(UART::CallbackType callbackType) {
-    bool success = callbackType == UART::CallbackType::TX_COMPLETE;
-
-    if (success) {
-        //state = true;
-        binaryNotification.sendFromISR();
-    }
-}
-
 Status DaisyChain::performAutoadressing() {
-    uint8_t sendDataAA = 0;
-    uint8_t receiveDataAA = 0;
+        uint8_t sendDataAA = 0;
+        uint8_t receiveDataAA = 0;
 
-    // send dummy data to sync delay-locked loop
-    sendDataAA = static_cast<uint8_t>(OTP_ECC_Test::RESET_VALUE);
-    if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::OTP_ECC_TEST, &sendDataAA, 1) != Status::COMPLETED)
-        return Status::ERROR;
-
-    // enable autoadressing on all devices
-    sendDataAA = static_cast<uint8_t>(Control1::RESET_VALUE) | static_cast<uint8_t>(Control1::ADDR_WR);
-    if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::CONTROL1, &sendDataAA, 1) != Status::COMPLETED)
-        return Status::ERROR;
-
-    // distribute addresses to all the devices
-    for(int i = 0; i < deviceCount; i++){
-        sendDataAA = RESET_VALUE_0 | i;
-        if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::DIR0_ADDR, &sendDataAA, 1) != Status::COMPLETED)
+        // send dummy data to sync delay-locked loop
+        sendDataAA = static_cast<uint8_t>(OTP_ECC_Test::RESET_VALUE);
+        if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::OTP_ECC_TEST, &sendDataAA, 1) != Status::COMPLETED)
             return Status::ERROR;
-    }
 
-    // set all devices to stack devices
-    sendDataAA = static_cast<uint8_t>(Comm_Ctrl::RESET_VALUE) | static_cast<uint8_t>(Comm_Ctrl::STACK_DEV);
-    if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
-        return Status::ERROR;
-    sendDataAA = 0;
-
-    // revoke stack device setting for base device
-    sendDataAA = static_cast<uint8_t>(Comm_Ctrl::RESET_VALUE);
-    if(write(ReqType::SINGLE_DEVICE_WRITE, Device::BASE_DEVICE, ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
-        return Status::ERROR;
-
-    // set up top of stack device
-    sendDataAA = static_cast<uint8_t>(Comm_Ctrl::RESET_VALUE) | static_cast<uint8_t>(Comm_Ctrl::STACK_DEV) | static_cast<uint8_t>(Comm_Ctrl::TOP_STACK);
-    if(write(ReqType::SINGLE_DEVICE_WRITE, static_cast<Device>(deviceCount - 1), ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
-        return Status::ERROR;
-
-    // read dummy data to sync delay-locked loop
-    if(read(ReqType::BROADCAST_READ, Device::MULTIPLE_DEVICES, ReadWriteRegister::OTP_ECC_TEST, 1) != Status::COMPLETED)
-        return Status::ERROR;
-
-    // read back device addresses of all devices and compare them
-    if(read(ReqType::BROADCAST_READ, Device::MULTIPLE_DEVICES, ReadWriteRegister::DIR0_ADDR, 1) != Status::COMPLETED)
-        return Status::ERROR;
-    for(int i = deviceCount - 1; i >= 0; i--){
-        if(readDataBuffer(&receiveDataAA) != Status::COMPLETED)
+        // enable autoadressing on all devices
+        sendDataAA = static_cast<uint8_t>(Control1::RESET_VALUE) | static_cast<uint8_t>(Control1::ADDR_WR);
+        if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::CONTROL1, &sendDataAA, 1) != Status::COMPLETED)
             return Status::ERROR;
-        if(receiveDataAA != i)
-            return Status::ERROR;
-    }
 
-    return Status::COMPLETED;
+        // distribute addresses to all the devices
+        for(int i = 0; i < deviceCount; i++){
+            sendDataAA = RESET_VALUE_0 | i;
+            if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::DIR0_ADDR, &sendDataAA, 1) != Status::COMPLETED)
+                return Status::ERROR;
+        }
+
+        // set all devices to stack devices
+        sendDataAA = static_cast<uint8_t>(Comm_Ctrl::RESET_VALUE) | static_cast<uint8_t>(Comm_Ctrl::STACK_DEV);
+        if(write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
+            return Status::ERROR;
+        sendDataAA = 0;
+
+        // revoke stack device setting for base device
+        sendDataAA = static_cast<uint8_t>(Comm_Ctrl::RESET_VALUE);
+        if(write(ReqType::SINGLE_DEVICE_WRITE, Device::BASE_DEVICE, ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        // set up top of stack device
+        sendDataAA = static_cast<uint8_t>(Comm_Ctrl::RESET_VALUE) | static_cast<uint8_t>(Comm_Ctrl::STACK_DEV) | static_cast<uint8_t>(Comm_Ctrl::TOP_STACK);
+        if(write(ReqType::SINGLE_DEVICE_WRITE, static_cast<Device>(deviceCount - 1), ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        // read dummy data to sync delay-locked loop
+        if(read(ReqType::BROADCAST_READ, Device::MULTIPLE_DEVICES, ReadWriteRegister::OTP_ECC_TEST, 1) != Status::COMPLETED)
+            return Status::ERROR;
+
+        // read back device addresses of all devices and compare them
+        if(read(ReqType::BROADCAST_READ, Device::MULTIPLE_DEVICES, ReadWriteRegister::DIR0_ADDR, 1) != Status::COMPLETED)
+            return Status::ERROR;
+        for(int i = deviceCount - 1; i >= 0; i--){
+            if(readDataBuffer(&receiveDataAA) != Status::COMPLETED)
+                return Status::ERROR;
+            if(receiveDataAA != i)
+                return Status::ERROR;
+        }
+
+        return Status::COMPLETED;
 }
 
 Status DaisyChain::activateVCs(Device device, Active_Cell activeVCConfig) {
-    uint8_t sendDataAVC = static_cast<uint8_t>(activeVCConfig);
-    if(write(ReqType::SINGLE_DEVICE_WRITE, device, OTPRegister::ACTIVE_CELL, &sendDataAVC, 1) != Status::COMPLETED)
-        return Status::ERROR;
+        uint8_t sendDataAVC = static_cast<uint8_t>(activeVCConfig);
+        if(write(ReqType::SINGLE_DEVICE_WRITE, device, OTPRegister::ACTIVE_CELL, &sendDataAVC, 1) != Status::COMPLETED)
+            return Status::ERROR;
 
-    return Status::COMPLETED;
+        return Status::COMPLETED;
 }
 
 Status DaisyChain::readCellVoltages(Device device, float *cellVoltages, uint8_t cellVoltageCount) {
-    // configure main adc in continous run mode and start adc
-    uint8_t sendDataRCV = static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
-    if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataRCV, 1) != Status::COMPLETED)
-        return Status::ERROR;
+        // configure main adc in continous run mode and start adc
+        uint8_t sendDataRCV = static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
+        if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::ADC_CTRL1, &sendDataRCV, 1) != Status::COMPLETED)
+            return Status::ERROR;
 
-    // TODO implement exact delay in us
-    Parallel::delay(15);
+        // TODO implement exact delay in us
+        Parallel::delay(10);
 
-    // read cell voltages from BQ
-    if(read(ReqType::SINGLE_DEVICE_READ, device,  static_cast<ReadOnlyRegister>(static_cast<uint16_t>(ReadOnlyRegister::VCELL1_LO) - (cellVoltageCount * 2 - 1)), cellVoltageCount * 2) != Status::COMPLETED)
-        return Status::ERROR;
+        // read cell voltages from BQ
+        if(read(ReqType::SINGLE_DEVICE_READ, device,  static_cast<ReadOnlyRegister>(static_cast<uint16_t>(ReadOnlyRegister::VCELL1_LO) - (cellVoltageCount * 2 - 1)), cellVoltageCount * 2) != Status::COMPLETED)
+            return Status::ERROR;
 
-    // write cell voltages in provided buffer
-    // TODO werte auf 0 zurücksetzen
-    uint16_t voltage_raw = 0;
-    int16_t voltage_signed = 0;
-    uint8_t v_hi = 0;
-    uint8_t v_lo = 0;
-    for(int8_t i = cellVoltageCount - 1; i >= 0; i--){
-        voltage_raw = 0;
-        voltage_signed = 0;
-        v_hi = 0;
-        v_lo = 0;
+        // write cell voltages in provided buffer
+        // TODO werte auf 0 zurücksetzen
+        uint16_t voltage_raw = 0;
+        int16_t voltage_signed = 0;
+        uint8_t v_hi = 0;
+        uint8_t v_lo = 0;
+        for(int8_t i = cellVoltageCount - 1; i >= 0; i--){
+            readDataBufferByte(&v_hi);
+            readDataBufferByte(&v_lo);
 
-        readDataBuffer(&v_hi);
-        readDataBuffer(&v_lo);
+            voltage_raw |= (static_cast<uint16_t>(v_hi) << 8) | static_cast<uint16_t>(v_lo);
+            voltage_signed = toSigned(voltage_raw);
 
-        voltage_raw |= (static_cast<uint16_t>(v_hi) << 8) | static_cast<uint16_t>(v_lo);
-        voltage_signed = toSigned(voltage_raw);
+            cellVoltages[i] = static_cast<float>(voltage_signed) * MAIN_AUX_ADC_RESOLUTION_VCELL / FACTOR_MICRO;
+        }
 
-        cellVoltages[i] = static_cast<float>(voltage_signed) * MAIN_AUX_ADC_RESOLUTION_VCELL / FACTOR_MICRO;
-    }
-
-    return Status::COMPLETED;
-}
-
-void DaisyChain::readDeviceIDs(){
-    uint8_t receiveDataAA = 0;
-    uint8_t temp = 0;
-
-    // read back device addresses of all devices and compare them
-    if(read(ReqType::BROADCAST_READ, Device::MULTIPLE_DEVICES, ReadWriteRegister::DIR0_ADDR, 1) != Status::COMPLETED)
-        temp = 1;
-    for(int i = deviceCount - 1; i >= 0; i--){
-        if(readDataBuffer(&receiveDataAA) != Status::COMPLETED)
-            temp =2;
-        if(receiveDataAA != i)
-            temp = 3;
-    }
+        return Status::COMPLETED;
 }
 
 // TODO function is not generic in terms of the GPIOs to activate, this is because of the shield NTCs, must be changed later
-Status DaisyChain::setActivateGPIOADCs(Device device) {
-    uint8_t sendDataAGA = static_cast<uint8_t>(GPIO_Conf1::GPIO2_ADC_ONLY)
-                          | static_cast<uint8_t>(GPIO_Conf1::GPIO1_ADC_ONLY);
-    if(write(ReqType::SINGLE_DEVICE_WRITE, device, OTPRegister::GPIO_CONF1, &sendDataAGA, 1) != Status::COMPLETED)
-        return Status::ERROR;
+Status DaisyChain::setActivateGPIOADCs(Device device, uint8_t activeGPIOCount) {
+        uint8_t sendDataAGA = static_cast<uint8_t>(GPIO_Conf4::GPIO8_ADC_ONLY) | static_cast<uint8_t>(GPIO_Conf4::GPIO7_ADC_ONLY);
+        if(write(ReqType::SINGLE_DEVICE_WRITE, device, OTPRegister::GPIO_CONF4, &sendDataAGA, 1) != Status::COMPLETED)
+            return Status::ERROR;
 
-    Parallel::delay(10);
+        sendDataAGA = RESET_VALUE_0 | static_cast<uint8_t>(Control2::TSREF_EN);
+        if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::CONTROL2, &sendDataAGA, 1) != Status::COMPLETED)
+            return Status::ERROR;
 
-    sendDataAGA = RESET_VALUE_0 | static_cast<uint8_t>(GPIO_Conf2::GPIO4_ADC_ONLY)
-                  | static_cast<uint8_t>(GPIO_Conf2::GPIO3_ADC_ONLY);
-    if(write(ReqType::SINGLE_DEVICE_WRITE, device, OTPRegister::GPIO_CONF2, &sendDataAGA, 1) != Status::COMPLETED)
-        return Status::ERROR;
+        Parallel::delay(2);
 
-    Parallel::delay(10);
-
-    sendDataAGA = RESET_VALUE_0 | static_cast<uint8_t>(GPIO_Conf3::GPIO6_ADC_ONLY)
-                  | static_cast<uint8_t>(GPIO_Conf3::GPIO5_ADC_ONLY);
-    if(write(ReqType::SINGLE_DEVICE_WRITE, device, OTPRegister::GPIO_CONF3, &sendDataAGA, 1) != Status::COMPLETED)
-        return Status::ERROR;
-
-    Parallel::delay(10);
-
-    sendDataAGA = RESET_VALUE_0 | static_cast<uint8_t>(GPIO_Conf4::GPIO8_ADC_ONLY)
-                  | static_cast<uint8_t>(GPIO_Conf4::GPIO7_ADC_ONLY);
-    if(write(ReqType::SINGLE_DEVICE_WRITE, device, OTPRegister::GPIO_CONF4, &sendDataAGA, 1) != Status::COMPLETED)
-        return Status::ERROR;
-
-    Parallel::delay(10);
-
-    sendDataAGA = RESET_VALUE_0 | static_cast<uint8_t>(Control2::TSREF_EN);
-    if(write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::CONTROL2, &sendDataAGA, 1) != Status::COMPLETED)
-        return Status::ERROR;
-
-    Parallel::delay(2);
-
-    return Status::COMPLETED;
+        return Status::COMPLETED;
 }
 
 // TODO function is not generic in terms of the GPIOs to read, this is because of the shield NTCs, must be changed later
@@ -600,77 +515,67 @@ Status DaisyChain::setActivateGPIOADCs(Device device) {
  * @return status code
  */
 Status DaisyChain::readCellTemperature(Device device, float *cellTemperatures, uint8_t cellTemperatureCount) {
-    Parallel::delay(10);
+        if(read(ReqType::SINGLE_DEVICE_READ, device,  ReadOnlyRegister::TSREF_HI, 2) != Status::COMPLETED)
+            return Status::ERROR;
 
-    if(read(ReqType::SINGLE_DEVICE_READ, device,  ReadOnlyRegister::TSREF_HI, 2) != Status::COMPLETED)
-        return Status::ERROR;
+        uint8_t tsref_hi = 0;
+        uint8_t tsref_lo = 0;
+        uint16_t tsref_raw = 0;
+        float v_tsref = 0;
 
-    uint8_t tsref_hi = 0;
-    uint8_t tsref_lo = 0;
-    uint16_t tsref_raw = 0;
-    float v_tsref = 0;
+        readDataBufferByte(&tsref_hi);
+        readDataBufferByte(&tsref_lo);
 
-    readDataBuffer(&tsref_hi);
-    readDataBuffer(&tsref_lo);
+        tsref_raw |= (static_cast<uint16_t>(tsref_hi) << 8) | static_cast<uint16_t>(tsref_lo);
+        v_tsref = static_cast<float>(toSigned(tsref_raw)) * MAIN_ADC_RESOLUTION_TSREF;
 
-    tsref_raw |= (static_cast<uint16_t>(tsref_hi) << 8) | static_cast<uint16_t>(tsref_lo);
-    v_tsref = static_cast<float>(toSigned(tsref_raw)) * MAIN_ADC_RESOLUTION_TSREF;
+        Parallel::delay(2);
 
-    Parallel::delay(10);
+        // TODO change "static_cast<ReadOnlyRegister>(ReadOnlyRegister::GPIO1_HI + 12)" to "ReadOnlyRegister::GPIO1_HI" to generalize function
+        if(read(ReqType::SINGLE_DEVICE_READ, device,  static_cast<ReadOnlyRegister>(static_cast<uint16_t>(ReadOnlyRegister::GPIO1_HI) + 12), cellTemperatureCount * 2) != Status::COMPLETED)
+            return Status::ERROR;
 
-    // TODO change "static_cast<ReadOnlyRegister>(ReadOnlyRegister::GPIO1_HI + 12)" to "ReadOnlyRegister::GPIO1_HI" to generalize function
-    if(read(ReqType::SINGLE_DEVICE_READ, device,  ReadOnlyRegister::GPIO1_HI, cellTemperatureCount * 2) != Status::COMPLETED)
-        return Status::ERROR;
+        uint8_t gpiox_hi = 0;
+        uint8_t gpiox_lo = 0;
+        uint16_t gpiox_raw = 0;
+        int16_t gpiox_signed = 0;
+        float gpiox_voltage  = 0;
+        float r_ntc = 0;
 
-    uint8_t gpiox_hi = 0;
-    uint8_t gpiox_lo = 0;
-    uint16_t gpiox_raw = 0;
-    int16_t gpiox_signed = 0;
-    float gpiox_voltage  = 0;
-    float r_ntc = 0;
+        // TODO werte zurücksetzen auf 0
+        for(uint8_t i = 0; i < cellTemperatureCount; i++){
+            readDataBufferByte(&gpiox_hi);
+            readDataBufferByte(&gpiox_lo);
 
-    // TODO werte zurücksetzen auf 0
-    for(uint8_t i = 0; i < cellTemperatureCount; i++){
-        gpiox_hi = 0;
-        gpiox_lo = 0;
-        gpiox_raw = 0;
-        gpiox_signed = 0;
-        gpiox_voltage  = 0;
-        r_ntc = 0;
+            gpiox_raw |= (static_cast<uint16_t>(gpiox_hi) << 8) | static_cast<uint16_t>(gpiox_lo);
+            gpiox_signed = toSigned(gpiox_raw);
 
-        readDataBuffer(&gpiox_hi);
-        readDataBuffer(&gpiox_lo);
+            gpiox_voltage = static_cast<float>(gpiox_signed) * MAIN_AUX_ADC_RESOLUTION_GPIO;
+            r_ntc = ((R_VOLTAGE_DIVIDER * gpiox_voltage) / (v_tsref - gpiox_voltage));
+            cellTemperatures[i] = (1 / ((1 / NTC_B) * logf(r_ntc / NTC_R0) + (1 / NTC_T0))) - CELCIUS_KELVIN_OFFSET;
+        }
 
-        gpiox_raw |= (static_cast<uint16_t>(gpiox_hi) << 8) | static_cast<uint16_t>(gpiox_lo);
-        gpiox_signed = toSigned(gpiox_raw);
-
-        gpiox_voltage = static_cast<float>(gpiox_signed) * MAIN_AUX_ADC_RESOLUTION_GPIO;
-        r_ntc = ((R_VOLTAGE_DIVIDER * gpiox_voltage) / (v_tsref - gpiox_voltage));
-        cellTemperatures[i] = (1 / ((1 / NTC_B) * logf(r_ntc / NTC_R0) + (1 / NTC_T0))) - CELCIUS_KELVIN_OFFSET;
-    }
-
-    return Status::COMPLETED;
+        return Status::COMPLETED;
 }
 
 Status DaisyChain::readDieTemperature(float *dieTemperature) {
-    Parallel::delay(10);
-    if(read(ReqType::BROADCAST_READ, Device::MULTIPLE_DEVICES,  ReadOnlyRegister::DIETEMP1_HI, 2) != Status::COMPLETED)
-        return Status::ERROR;
+        if(read(ReqType::BROADCAST_READ, Device::MULTIPLE_DEVICES,  ReadOnlyRegister::DIETEMP1_HI, 2) != Status::COMPLETED)
+            return Status::ERROR;
 
-    uint8_t dt_hi = 0;
-    uint8_t dt_lo = 0;
-    uint16_t dt_raw = 0;
+        uint8_t dt_hi = 0;
+        uint8_t dt_lo = 0;
+        uint16_t dt_raw = 0;
 
-    for(int i = deviceCount - 1; i >= 0; i--){
-        readDataBuffer(&dt_hi);
-        readDataBuffer(&dt_lo);
+        for(int i = deviceCount - 1; i >= 0; i--){
+            readDataBufferByte(&dt_hi);
+            readDataBufferByte(&dt_lo);
 
-        dt_raw = 0;
-        dt_raw |= (static_cast<uint16_t>(dt_hi) << 8) | static_cast<uint16_t>(dt_lo);
-        dieTemperature[i] = static_cast<float>(toSigned(dt_raw)) * MAIN_ADC_RESOLUTION_DIETEMP1;
-    }
+            dt_raw = 0;
+            dt_raw |= (static_cast<uint16_t>(dt_hi) << 8) | static_cast<uint16_t>(dt_lo);
+            dieTemperature[i] = static_cast<float>(toSigned(dt_raw)) * MAIN_ADC_RESOLUTION_DIETEMP1;
+        }
 
-    return Status::COMPLETED;
+        return Status::COMPLETED;
 }
 
 // TODO check if GPIO and VC configuration already took place
@@ -682,56 +587,25 @@ Status DaisyChain::readDieTemperature(float *dieTemperature) {
  * @return
  */
 Status DaisyChain::activateADCs(uint8_t config) {
-    return write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::ADC_CTRL1, &config, 1);
+        return write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::ADC_CTRL1, &config, 1);
 }
 
 Status DaisyChain::getFaultSummary(Device device, FaultSummary *faults) {
-    Parallel::delay(10);
-    if(read(ReqType::SINGLE_DEVICE_READ, device,  ReadOnlyRegister::FAULT_SUMMARY, 1) != Status::COMPLETED)
-        return Status::ERROR;
+        if(read(ReqType::SINGLE_DEVICE_READ, device,  ReadOnlyRegister::FAULT_SUMMARY, 1) != Status::COMPLETED)
+            return Status::ERROR;
 
-    uint8_t dataFS = 0;
-    readDataBuffer(&dataFS);
+        uint8_t dataFS = 0;
+        readDataBufferByte(&dataFS);
 
-    uint8_t mask = 1;
-    faults->faultProt      = (dataFS >> 7) & mask;
-    faults->faultCompADC   = (dataFS >> 6) & mask;
-    faults->faultOTP       = (dataFS >> 5) & mask;
-    faults->faultComm      = (dataFS >> 4) & mask;
-    faults->faultOTUT      = (dataFS >> 3) & mask;
-    faults->faultOVUV      = (dataFS >> 2) & mask;
-    faults->faultSys       = (dataFS >> 1) & mask;
-    faults->faultPwr       = dataFS & mask;
+        uint8_t mask = 1;
+        faults->faultProt      = (dataFS >> 7) & mask;
+        faults->faultCompADC   = (dataFS >> 6) & mask;
+        faults->faultOTP       = (dataFS >> 5) & mask;
+        faults->faultComm      = (dataFS >> 4) & mask;
+        faults->faultOTUT      = (dataFS >> 3) & mask;
+        faults->faultOVUV      = (dataFS >> 2) & mask;
+        faults->faultSys       = (dataFS >> 1) & mask;
+        faults->faultPwr       = dataFS & mask;
 
-    return Status::COMPLETED;
-}
-
-void DaisyChain::wake() {
-
-    ping(Ping_us::HARDWARE_RESET);
-    Parallel::delay(100);
-    ping(Ping_us::WAKE);
-    // wait min 10ms + 600us per device wake propagation
-    Parallel::delay(100);
-    ping(Ping_us::WAKE);
-    // wait min 10ms + 600us per device wake propagation, dont know why have to to this twice
-    Parallel::delay(100);
-}
-void DaisyChain::handleData(uint8_t *data, uint16_t length, bool idle) {
-    for (uint16_t i = 0; i < length; i++) {
-        if (nextIndex == receiveBufferSize) {
-            nextIndex = 0;
-            Debug::warning(); // Buffer overflow
-        }
-
-        buffer[nextIndex++] = data[i];
-        processDataIfComplete();
-    }
-}
-void DaisyChain::processDataIfComplete() {
-    if (nextIndex < receiveBufferSize) return;
-
-    nextIndex = 0;
-
-    binaryNotification.sendFromISR();
+        return Status::COMPLETED;
 }

@@ -3,80 +3,6 @@
 #include "util/Common.h"
 
 namespace BQ79612 {
-    struct [[maybe_unused]] OTPProgStat{
-        [[maybe_unused]] bool unlock;
-        [[maybe_unused]] bool otErr;
-        [[maybe_unused]] bool uvErr;
-        [[maybe_unused]] bool ovErr;
-        [[maybe_unused]] bool suvErr;
-        [[maybe_unused]] bool sovErr;
-        [[maybe_unused]] bool progErr;
-        [[maybe_unused]] bool done;
-    };
-
-    struct [[maybe_unused]] OTPCust1Stat{
-        [[maybe_unused]] bool loaded;
-        [[maybe_unused]] bool loadWrn;
-        [[maybe_unused]] bool loadErr;
-        [[maybe_unused]] bool fmtErr;
-        [[maybe_unused]] bool progOK;
-        [[maybe_unused]] bool uvOK;
-        [[maybe_unused]] bool ovOK;
-        [[maybe_unused]] bool _try;
-    };
-
-    struct [[maybe_unused]] OTPCust2Stat{
-        [[maybe_unused]] bool loaded;
-        [[maybe_unused]] bool loadWrn;
-        [[maybe_unused]] bool loadErr;
-        [[maybe_unused]] bool fmtErr;
-        [[maybe_unused]] bool progOK;
-        [[maybe_unused]] bool uvOK;
-        [[maybe_unused]] bool ovOK;
-        [[maybe_unused]] bool _try;
-    };
-
-    struct [[maybe_unused]] DiagStat{
-        [[maybe_unused]] bool dRdyOTUT;
-        [[maybe_unused]] bool dRdyOVUV;
-        [[maybe_unused]] bool dRdyBistOTUT;
-        [[maybe_unused]] bool dRdyBistOVUV;
-        [[maybe_unused]] bool dRdyBistPwr;
-    };
-
-    struct [[maybe_unused]] ADCStat{
-        [[maybe_unused]] bool dRdyAuxGPIO;
-        [[maybe_unused]] bool dRdyAuxCell;
-        [[maybe_unused]] bool dRdyAuxMisc;
-        [[maybe_unused]] bool dRdyMainADC;
-        [[maybe_unused]] bool dRdyLPF;
-        [[maybe_unused]] bool dRdyGPIO;
-        [[maybe_unused]] bool dRdyVCOW;
-        [[maybe_unused]] bool dRdyCBOW;
-        [[maybe_unused]] bool dRdyCBFet;
-        [[maybe_unused]] bool dRdyVCCB;
-    };
-
-    struct [[maybe_unused]] BalStat{
-        [[maybe_unused]] bool invalidCBConf;
-        [[maybe_unused]] bool otPauseDet;
-        [[maybe_unused]] bool cbInPause;
-        [[maybe_unused]] bool mbRun;
-        [[maybe_unused]] bool cbRun;
-        [[maybe_unused]] bool abortFlt;
-        [[maybe_unused]] bool mbDone;
-        [[maybe_unused]] bool cbDone;
-    };
-
-    struct [[maybe_unused]] DevStat{
-        [[maybe_unused]] bool factCRCDone;
-        [[maybe_unused]] bool custCRCDone;
-        [[maybe_unused]] bool otutRun;
-        [[maybe_unused]] bool ovuvRun;
-        [[maybe_unused]] bool auxRun;
-        [[maybe_unused]] bool mainRun;
-    };
-
     struct [[maybe_unused]] FaultSummary{
         [[maybe_unused]] bool faultProt;
         [[maybe_unused]] bool faultCompADC;
@@ -277,27 +203,14 @@ namespace BQ79612 {
         [[maybe_unused]] bool dvddOV;
         [[maybe_unused]] bool avddOsc;
         [[maybe_unused]] bool avddOV;
+
         [[maybe_unused]] bool pwrBistFail;
         [[maybe_unused]] bool refhOsc;
         [[maybe_unused]] bool neg5VUV;
         [[maybe_unused]] bool tsrefOsc;
         [[maybe_unused]] bool tsrefUV;
         [[maybe_unused]] bool tsrefOV;
-        [[maybe_unused]] bool avddUVDRst;
-    };
 
-    struct [[maybe_unused]] CBComplete{
-        [[maybe_unused]] bool cell12Done;
-        [[maybe_unused]] bool cell11Done;
-        [[maybe_unused]] bool cell10Done;
-        [[maybe_unused]] bool cell9Done;
-        [[maybe_unused]] bool cell8Done;
-        [[maybe_unused]] bool cell7Done;
-        [[maybe_unused]] bool cell6Done;
-        [[maybe_unused]] bool cell5Done;
-        [[maybe_unused]] bool cell4Done;
-        [[maybe_unused]] bool cell3Done;
-        [[maybe_unused]] bool cell2Done;
-        [[maybe_unused]] bool cell1Done;
+        [[maybe_unused]] bool avddUVDRst;
     };
 }
