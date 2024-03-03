@@ -47,7 +47,7 @@
 //            Debug::exception();
 //    }
 //
-//    void startUp(){
+//    void startShield(){
 //        uint8_t cfg = static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
 //        Parallel::delay(10);
 //
@@ -122,7 +122,7 @@
 //    AMS_Shield amsShield(3);
 //
 //    amsShield.generalStartup();
-//    amsShield.startUp();
+//    amsShield.startShield();
 //
 //    for(;;){
 ////        if(ams.readCellTemperature(Device::STACK_DEVICE2, cellTemperatures, 2) != Status::COMPLETED)
