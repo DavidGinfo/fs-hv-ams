@@ -41,11 +41,7 @@ namespace BQ79612 {
 
     class DaisyChain{
       public:
-        DaisyChain(DaisyChain &) = delete;
-
-        DaisyChain(DaisyChain &&) = delete;
-
-        explicit DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
+        DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
 
         void init();
 
@@ -58,24 +54,21 @@ namespace BQ79612 {
         Status read(ReqType readCommandType, Device device, ReadWriteRegister startRegister, uint8_t registerCount);
         Status read(ReqType readCommandType, Device device, ReadOnlyRegister startRegister, uint8_t registerCount);
 
-        // TODO test if the pointer passes correctly through the layers
         Status readDataBuffer(uint8_t *value);
 
-        Status performAutoadressing();
-        // TODO implement
-        Status getFaults();
-
-        Status activateADCs(uint8_t config);
-
-        Status activateVCs(Device device, Active_Cell activeVCConfig);
-        Status readCellVoltages(Device device, float *cellVoltages, uint8_t cellVoltageCount);
-
-        Status setActivateGPIOADCs(Device device, uint8_t activeGPIOCount);
-        Status readCellTemperature(Device device, float *cellTemperatures, uint8_t cellTemperatureCount);
-
-        Status readDieTemperature(float *dieTemperature);
-
-        Status getFaultSummary(Device device, FaultSummary *faults);
+//        Status performAutoadressing();
+//
+//        Status activateADCs(uint8_t config);
+//
+//        Status activateVCs(Device device, Active_Cell activeVCConfig);
+//        Status readCellVoltages(Device device, float *cellVoltages, uint8_t cellVoltageCount);
+//
+//        Status setActivateGPIOADCs(Device device, uint8_t activeGPIOCount);
+//        Status readCellTemperature(Device device, float *cellTemperatures, uint8_t cellTemperatureCount);
+//
+//        Status readDieTemperature(float *dieTemperature);
+//
+//        Status getFaultSummary(Device device, FaultSummary *faults);
 
       private:
         UART_HandleTypeDef *uartHandle;
@@ -133,8 +126,5 @@ namespace BQ79612 {
 
         Status writeRegisters(ReqType writeCommandType, Device device, uint16_t startRegister, uint8_t *data, uint8_t dataLength);
         Status readRegisters(ReqType readCommandType, Device device, uint16_t startRegister, uint8_t registerCount);
-
-
-        Status act(Device device);
     };
 }
