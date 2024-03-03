@@ -74,7 +74,7 @@ namespace BQ79612 {
         [[maybe_unused]] bool otutRun;
         [[maybe_unused]] bool ovuvRun;
         [[maybe_unused]] bool auxRun;
-        [[maybe_unused]] bool mainRun
+        [[maybe_unused]] bool mainRun;
     };
 
     struct [[maybe_unused]] FaultSummary{
