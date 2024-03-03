@@ -36,7 +36,13 @@ BS_:
 BU_: AMS
 
 
-BO_ 3 AMS_Faults1: 1 AMS
+BO_ 4 AMS_Shield_Simulink: 7 AMS
+ SG_ Simulink_BatSOC : 40|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
+ SG_ Simulink_BatCurrent : 23|17@1+ (0.001,0) [0|131.071] "A" Vector__XXX
+ SG_ Simulink_BatTemp : 13|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
+ SG_ Simulink_Voltage : 0|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
+
+BO_ 3 AMS_Shield_Fault_Summary: 1 AMS
  SG_ Fault_Power_Rail : 7|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ Fault_System : 6|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ Fault_OVOV : 5|1@1+ (1,0) [0|1] "" Vector__XXX
@@ -74,6 +80,7 @@ BA_DEF_DEF_  "GenMsgSendType" "NoMsgSendType";
 BA_DEF_DEF_  "GenMsgCycleTime" 0;
 BA_DEF_DEF_  "NmStationAddress" 0;
 BA_ "BusType" "";
+BA_ "GenMsgCycleTime" BO_ 4 50;
 BA_ "GenMsgCycleTime" BO_ 3 50;
 BA_ "GenMsgCycleTime" BO_ 2 50;
 BA_ "GenMsgCycleTime" BO_ 1 50;
