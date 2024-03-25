@@ -41,6 +41,8 @@ namespace BQ79612 {
 
     class DaisyChain{
       public:
+        uint8_t deviceCount = 0;
+
         DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
 
         void init();
@@ -75,7 +77,6 @@ namespace BQ79612 {
         TIM_HandleTypeDef *timHandle;
         GPIO::Pin UART_TX;
         GPIO::Pin UART_RX;
-        uint8_t deviceCount = 0;
 
         GPIO_InitTypeDef UART_TX_GPIO_InitStruct;
 
