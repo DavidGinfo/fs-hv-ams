@@ -25,7 +25,6 @@ namespace BQ79612 {
         Status readDieTemperature(float *dieTemperature);
         Status getFaultSummary(Device device, FaultSummary *faults);
       private:
-        uint8_t deviceCount;
         DaisyChain daisyChain;
 
 
