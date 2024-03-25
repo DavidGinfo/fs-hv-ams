@@ -17,7 +17,7 @@ Status Manager::performAutoadressing() {
         return Status::ERROR;
 
     // distribute addresses to all the devices
-    for(int i = 0; i < deviceCount; i++){
+    for(int i = 0; i < daisyChain.deviceCount; i++){
         sendDataAA = RESET_VALUE_0 | i;
         if(daisyChain.write(ReqType::BROADCAST_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::DIR0_ADDR, &sendDataAA, 1) != Status::COMPLETED)
             return Status::ERROR;
@@ -36,7 +36,7 @@ Status Manager::performAutoadressing() {
 
     // set up top of stack device
     sendDataAA = static_cast<uint8_t>(Comm_Ctrl::RESET_VALUE) | static_cast<uint8_t>(Comm_Ctrl::STACK_DEV) | static_cast<uint8_t>(Comm_Ctrl::TOP_STACK);
-    if(daisyChain.write(ReqType::SINGLE_DEVICE_WRITE, static_cast<Device>(deviceCount - 1), ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
+    if(daisyChain.write(ReqType::SINGLE_DEVICE_WRITE, static_cast<Device>(daisyChain.deviceCount - 1), ReadWriteRegister::COMM_CTRL, &sendDataAA, 1) != Status::COMPLETED)
         return Status::ERROR;
 
     // read dummy data to sync delay-locked loop
@@ -46,7 +46,7 @@ Status Manager::performAutoadressing() {
     // read back device addresses of all devices and compare them
     if(daisyChain.read(ReqType::BROADCAST_READ, Device::MULTIPLE_DEVICES, ReadWriteRegister::DIR0_ADDR, 1) != Status::COMPLETED)
         return Status::ERROR;
-    for(int i = deviceCount - 1; i >= 0; i--){
+    for(int i = daisyChain.deviceCount - 1; i >= 0; i--){
         if(daisyChain.readDataBuffer(&receiveDataAA) != Status::COMPLETED)
             return Status::ERROR;
         if(receiveDataAA != i)
@@ -71,7 +71,7 @@ Status Manager::readCellVoltages(Device device, float *cellVoltages, uint8_t cel
         return Status::ERROR;
 
     // TODO implement exact delay in us
-    Parallel::delay(10);
+    Parallel::delay(15);
 
     // read cell voltages from BQ
     if(daisyChain.read(ReqType::SINGLE_DEVICE_READ, device,  static_cast<ReadOnlyRegister>(static_cast<uint16_t>(ReadOnlyRegister::VCELL1_LO) - (cellVoltageCount * 2 - 1)), cellVoltageCount * 2) != Status::COMPLETED)
@@ -176,7 +176,7 @@ Status Manager::readDieTemperature(float *dieTemperature) {
     uint8_t dt_lo = 0;
     uint16_t dt_raw = 0;
 
-    for(int i = deviceCount - 1; i >= 0; i--){
+    for(int i = daisyChain.deviceCount - 1; i >= 0; i--){
         daisyChain.readDataBuffer(&dt_hi);
         daisyChain.readDataBuffer(&dt_lo);
 
