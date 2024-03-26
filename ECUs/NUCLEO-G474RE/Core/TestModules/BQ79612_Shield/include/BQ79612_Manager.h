@@ -11,6 +11,7 @@ namespace BQ79612 {
         Manager(Manager &&) = delete;
 
         Manager(DaisyChain daisyChain);
+//        explicit Manager(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
 
         void wake();
         void sleep();

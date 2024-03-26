@@ -234,3 +234,5 @@ void Manager::wake() {
 }
 Manager::Manager(DaisyChain daisyChain) : daisyChain(daisyChain){
 }
+//Manager::Manager(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx)
+  //  : daisyChain(uartHandle, timHandle, deviceCount, uart_tx, uart_rx){}
