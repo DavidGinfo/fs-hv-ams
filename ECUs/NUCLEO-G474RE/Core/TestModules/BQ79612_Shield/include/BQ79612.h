@@ -22,7 +22,7 @@ namespace BQ79612 {
     const uint8_t TEST_DEVICE_COUNT = 3;
     const uint8_t BUFFER_SIZE = static_cast<uint8_t>(TEST_DEVICE_COUNT * MAX_LENGTH_TRANSACTION_FRAME);
     const uint8_t DATA_BUFFER_SIZE = static_cast<uint8_t>(TEST_DEVICE_COUNT * MAX_DATA_SIZE_RESPONSE_FRAME);
-    inline constexpr Parallel::TimeMS HOST_UART_TIMEOUT = 10;
+    inline constexpr Parallel::TimeMS HOST_UART_TIMEOUT = 100;
 
     const float CELCIUS_KELVIN_OFFSET = 273.15;
     const float FACTOR_MICRO = 1000000;
@@ -42,6 +42,12 @@ namespace BQ79612 {
     class DaisyChain{
       public:
         uint8_t deviceCount = 0;
+
+//        DaisyChain(DaisyChain &) = delete;
+//
+//        DaisyChain(DaisyChain &&) = delete;
+//
+//        explicit DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
 
         DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
 
