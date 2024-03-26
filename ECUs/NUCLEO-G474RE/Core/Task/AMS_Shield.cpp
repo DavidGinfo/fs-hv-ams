@@ -33,6 +33,8 @@ class AMS_Shield  {
 
   public:
     AMS_Shield(DaisyChain dChain) : amsManager(dChain){}
+    //explicit AMS_Shield() : amsManager(huart4, htim16, DEVICE_COUNT, uart_tx, uart_rx){}
+
 
     void generalStartup(){
         amsManager.wake();
