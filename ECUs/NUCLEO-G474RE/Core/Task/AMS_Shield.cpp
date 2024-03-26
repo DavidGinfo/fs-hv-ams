@@ -182,7 +182,9 @@ class AMS_Shield  {
     }
 
     void readCurrent(){
-        AMS_Current::TS_Current.setPhysicalValue(IVTS_Current::IVTS_Current.getPhysicalValue());
+        uint64_t temp = IVTS_Current::IVTS_Current.getPhysicalValue();
+
+        AMS_Current::TS_Current.setPhysicalValue(temp);
     }
 
     void runSimulink(){
