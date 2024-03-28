@@ -36,7 +36,7 @@ BS_:
 BU_: AMS_Shield
 
 
-BO_ 9 AMS_Current: 8 AMS_Shield
+BO_ 512 AMS_Current: 8 AMS_Shield
  SG_ TS_Current : 0|18@1- (0.001,0) [-131.072|131.071] "A" Vector__XXX
 
 BO_ 7 AMS_CellTemperatures_Extra: 5 AMS_Shield
@@ -53,28 +53,28 @@ BO_ 6 AMS_CellTemperatures2: 8 AMS_Shield
  SG_ Temperature_Cell08 : 10|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
  SG_ Temperature_Cell07 : 0|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
 
-BO_ 4 AMS_CellVoltages3: 8 AMS_Shield
+BO_ 115 AMS_CellVoltages3: 8 AMS_Shield
  SG_ Voltage_Cell12 : 48|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
  SG_ Voltage_Cell11 : 32|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
  SG_ Voltage_Cell10 : 16|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
  SG_ Voltage_Cell09 : 0|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
 
-BO_ 3 AMS_CellVoltages2: 8 AMS_Shield
+BO_ 101 AMS_CellVoltages2: 8 AMS_Shield
  SG_ Voltage_Cell08 : 48|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
  SG_ Voltage_Cell07 : 32|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
  SG_ Voltage_Cell06 : 16|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
  SG_ Voltage_Cell05 : 0|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
 
 BO_ 1313 IVTS_Current: 6 Vector__XXX
- SG_ IVTS_Current : 23|32@0- (0.001,0) [-2147483.648|2147483.647] "A"  AMS_Shield
+ SG_ IVTS_Current : 23|32@0- (1,0) [-2147483648|2147483647] "mA"  AMS_Shield
 
-BO_ 8 AMS_Simulink: 7 AMS_Shield
+BO_ 16 AMS_Simulink: 7 AMS_Shield
  SG_ Simulink_BatSOC : 40|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
  SG_ Simulink_BatCurrent : 26|14@1+ (0.01,0) [0|163.83] "A" Vector__XXX
  SG_ Simulink_BatTemp : 16|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
  SG_ Simulink_Voltage : 0|16@1+ (0.001,0) [0|65.535] "V" Vector__XXX
 
-BO_ 0 AMS_Fault_Summary: 3 AMS_Shield
+BO_ 48 AMS_Fault_Summary: 3 AMS_Shield
  SG_ Fault_System_S1_D2 : 22|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ Fault_System_S1_D1 : 14|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ Fault_Protection_S1_D2 : 16|1@1+ (1,0) [0|1] "" Vector__XXX
@@ -100,13 +100,13 @@ BO_ 0 AMS_Fault_Summary: 3 AMS_Shield
  SG_ Fault_ADC_Comparison_BD : 1|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ Fault_Protection_BD : 0|1@1+ (1,0) [0|1] "" Vector__XXX
 
-BO_ 2 AMS_CellVoltages1: 7 AMS_Shield
+BO_ 65 AMS_CellVoltages1_zxy: 7 AMS_Shield
  SG_ Voltage_Cell04 : 39|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
  SG_ Voltage_Cell03 : 13|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
  SG_ Voltage_Cell02 : 26|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
  SG_ Voltage_Cell01 : 0|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
 
-BO_ 1 AMS_DieTemperatures: 5 AMS_Shield
+BO_ 32 AMS_DieTemperatures: 5 AMS_Shield
  SG_ Temperature_Die_S1_D2 : 22|11@1+ (0.1,0) [0|204.7] "°C" Vector__XXX
  SG_ Temperature_Die_S1_D1 : 11|11@1+ (0.1,0) [0|204.7] "°C" Vector__XXX
  SG_ Temperature_Die_BD : 0|11@1+ (0.1,0) [0|204.7] "°C" Vector__XXX
@@ -134,15 +134,15 @@ BA_DEF_DEF_  "GenMsgSendType" "NoMsgSendType";
 BA_DEF_DEF_  "GenMsgCycleTime" 0;
 BA_DEF_DEF_  "NmStationAddress" 0;
 BA_ "BusType" "";
-BA_ "GenMsgCycleTime" BO_ 9 50;
+BA_ "GenMsgCycleTime" BO_ 512 50;
 BA_ "GenMsgCycleTime" BO_ 7 50;
 BA_ "GenMsgCycleTime" BO_ 6 50;
-BA_ "GenMsgCycleTime" BO_ 4 50;
-BA_ "GenMsgCycleTime" BO_ 3 50;
+BA_ "GenMsgCycleTime" BO_ 115 50;
+BA_ "GenMsgCycleTime" BO_ 101 50;
 BA_ "GenMsgCycleTime" BO_ 1313 20;
-BA_ "GenMsgCycleTime" BO_ 8 50;
-BA_ "GenMsgCycleTime" BO_ 0 50;
-BA_ "GenMsgCycleTime" BO_ 2 50;
-BA_ "GenMsgCycleTime" BO_ 1 50;
+BA_ "GenMsgCycleTime" BO_ 16 50;
+BA_ "GenMsgCycleTime" BO_ 48 50;
+BA_ "GenMsgCycleTime" BO_ 65 50;
+BA_ "GenMsgCycleTime" BO_ 32 50;
 BA_ "GenMsgCycleTime" BO_ 5 50;
 
