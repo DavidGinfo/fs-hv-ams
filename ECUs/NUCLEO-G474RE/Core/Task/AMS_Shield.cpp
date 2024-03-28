@@ -26,7 +26,7 @@ DaisyChain daisyChain = DaisyChain(huart4, htim16, DEVICE_COUNT, uart_tx, uart_r
 // Simulink model code
 ExtU_BMS_T externalInputs;
 ExtY_BMS_T externalOutputs;
-//BMS bms = BMS();
+BMS bms = BMS();
 
 class AMS_Shield  {
     Manager amsManager;
@@ -40,7 +40,7 @@ class AMS_Shield  {
         amsManager.wake();
 
         //Simulink model
-//        bms.initialize();
+        bms.initialize();
 
         if(amsManager.performAutoadressing() != Status::COMPLETED)
             Debug::exception();
@@ -51,10 +51,12 @@ class AMS_Shield  {
         Parallel::delay(10);
 
         amsManager.activateVCs(Device::STACK_DEVICE2, Active_Cell::_6S);
+        Parallel::delay(10);
         amsManager.activateVCs(Device::STACK_DEVICE3, Active_Cell::_6S);
 
-        amsManager.setActivateGPIOADCs(Device::STACK_DEVICE2, 8);
-        amsManager.setActivateGPIOADCs(Device::STACK_DEVICE3, 8);
+        amsManager.setActivateGPIOADCs(Device::STACK_DEVICE2);
+        Parallel::delay(10);
+        amsManager.setActivateGPIOADCs(Device::STACK_DEVICE3);
 
         amsManager.activateADCs(cfg);
     }
@@ -80,13 +82,13 @@ class AMS_Shield  {
 //        AMS_CellVoltages3::Voltage_Cell12.setPhysicalValue(voltages[11]);
 
         //Simulink model
-        externalInputs.BMSVoltageInData_c.Voltage1 = voltages[0];
+        externalInputs.BMSVoltageInData_c.Voltage1 = voltages[1];
         externalInputs.BMSVoltageInData_c.Voltage2 = voltages[1];
         externalInputs.BMSVoltageInData_c.Voltage3 = voltages[2];
         externalInputs.BMSVoltageInData_c.Voltage4 = voltages[3];
         externalInputs.BMSVoltageInData_c.Voltage5 = voltages[4];
         externalInputs.BMSVoltageInData_c.Voltage6 = voltages[5];
-        externalInputs.BMSVoltageInData_c.Voltage7 = voltages[6];
+        externalInputs.BMSVoltageInData_c.Voltage7 = voltages[7];
         externalInputs.BMSVoltageInData_c.Voltage8 = voltages[7];
         externalInputs.BMSVoltageInData_c.Voltage9 = voltages[8];
         externalInputs.BMSVoltageInData_c.Voltage10 = voltages[9];
@@ -125,22 +127,22 @@ class AMS_Shield  {
         externalInputs.BMSTempInData_f.Temp4 = temperatures[3];
         externalInputs.BMSTempInData_f.Temp5 = temperatures[4];
         externalInputs.BMSTempInData_f.Temp6 = temperatures[5];
-        externalInputs.BMSTempInData_f.Temp7 = temperatures[6];
-        externalInputs.BMSTempInData_f.Temp8 = temperatures[7];
-        externalInputs.BMSTempInData_f.Temp9 = temperatures[8];
-        externalInputs.BMSTempInData_f.Temp10 = temperatures[9];
-        externalInputs.BMSTempInData_f.Temp11 = temperatures[10];
-        externalInputs.BMSTempInData_f.Temp12 = temperatures[11];
+        externalInputs.BMSTempInData_f.Temp7 = temperatures[9];
+        externalInputs.BMSTempInData_f.Temp8 = temperatures[9];
+        externalInputs.BMSTempInData_f.Temp9 = temperatures[10];
+        externalInputs.BMSTempInData_f.Temp10 = temperatures[11];
+        externalInputs.BMSTempInData_f.Temp11 = temperatures[12];
+        externalInputs.BMSTempInData_f.Temp12 = temperatures[13];
     }
 
     void readDieTemperatures(){
         float temperatures[4];
         if(amsManager.readDieTemperature(temperatures) != Status::COMPLETED)
             Debug::exception();
-//
-//        AMS_DieTemperatures::Temperature_Die_BD.setPhysicalValue(temperatures[0]);
-//        AMS_DieTemperatures::Temperature_Die_S1_D1.setPhysicalValue(temperatures[1]);
-//        AMS_DieTemperatures::Temperature_Die_S1_D2.setPhysicalValue(temperatures[2]);
+
+        AMS_DieTemperatures::Temperature_Die_BD.setPhysicalValue(temperatures[0]);
+        AMS_DieTemperatures::Temperature_Die_S1_D1.setPhysicalValue(temperatures[2]);
+        AMS_DieTemperatures::Temperature_Die_S1_D2.setPhysicalValue(temperatures[3]);
     }
 
     void readFaults(){
@@ -150,37 +152,37 @@ class AMS_Shield  {
 
         if(amsManager.getFaultSummary(Device::BASE_DEVICE, &faults_BD) != Status::COMPLETED)
             Debug::exception();
-        if(amsManager.getFaultSummary(Device::STACK_DEVICE1, &faults_S1_D1) != Status::COMPLETED)
+        if(amsManager.getFaultSummary(Device::STACK_DEVICE2, &faults_S1_D1) != Status::COMPLETED)
             Debug::exception();
-        if(amsManager.getFaultSummary(Device::STACK_DEVICE2, &faults_S1_D2) != Status::COMPLETED)
+        if(amsManager.getFaultSummary(Device::STACK_DEVICE3, &faults_S1_D2) != Status::COMPLETED)
             Debug::exception();
 
-//        AMS_Fault_Summary::Fault_Protection_BD.setPhysicalValue(faults_BD.faultProt);
-//        AMS_Fault_Summary::Fault_ADC_Comparison_BD.setPhysicalValue(faults_BD.faultCompADC);
-//        AMS_Fault_Summary::Fault_OTP_BD.setPhysicalValue(faults_BD.faultOTP);
-//        AMS_Fault_Summary::Fault_Communication_BD.setPhysicalValue(faults_BD.faultComm);
-//        AMS_Fault_Summary::Fault_OTUT_BD.setPhysicalValue(faults_BD.faultOTUT);
-//        AMS_Fault_Summary::Fault_OVOV_BD.setPhysicalValue(faults_BD.faultOVUV);
-//        AMS_Fault_Summary::Fault_System_BD.setPhysicalValue(faults_BD.faultSys);
-//        AMS_Fault_Summary::Fault_Power_Rail_BD.setPhysicalValue(faults_BD.faultPwr);
-//
-//        AMS_Fault_Summary::Fault_Protection_S1_D1.setPhysicalValue(faults_S1_D1.faultProt);
-//        AMS_Fault_Summary::Fault_ADC_Comparison_S1_D1.setPhysicalValue(faults_S1_D1.faultCompADC);
-//        AMS_Fault_Summary::Fault_OTP_S1_D1.setPhysicalValue(faults_S1_D1.faultOTP);
-//        AMS_Fault_Summary::Fault_Communication_S1_D1.setPhysicalValue(faults_S1_D1.faultComm);
-//        AMS_Fault_Summary::Fault_OTUT_S1_D1.setPhysicalValue(faults_S1_D1.faultOTUT);
-//        AMS_Fault_Summary::Fault_OVOV_S1_D1.setPhysicalValue(faults_S1_D1.faultOVUV);
-//        AMS_Fault_Summary::Fault_System_S1_D1.setPhysicalValue(faults_S1_D1.faultSys);
-//        AMS_Fault_Summary::Fault_Power_Rail_S1_D1.setPhysicalValue(faults_S1_D1.faultPwr);
-//
-//        AMS_Fault_Summary::Fault_Protection_S1_D2.setPhysicalValue(faults_S1_D2.faultProt);
-//        AMS_Fault_Summary::Fault_ADC_Comparison_S1_D2.setPhysicalValue(faults_S1_D2.faultCompADC);
-//        AMS_Fault_Summary::Fault_OTP_S1_D2.setPhysicalValue(faults_S1_D2.faultOTP);
-//        AMS_Fault_Summary::Fault_Communication_S1_D2.setPhysicalValue(faults_S1_D2.faultComm);
-//        AMS_Fault_Summary::Fault_OTUT_S1_D2.setPhysicalValue(faults_S1_D2.faultOTUT);
-//        AMS_Fault_Summary::Fault_OVOV_S1_D2.setPhysicalValue(faults_S1_D2.faultOVUV);
-//        AMS_Fault_Summary::Fault_System_S1_D2.setPhysicalValue(faults_S1_D2.faultSys);
-//        AMS_Fault_Summary::Fault_Power_Rail_S1_D2.setPhysicalValue(faults_S1_D2.faultPwr);
+        AMS_Fault_Summary::Fault_Protection_BD.setPhysicalValue(faults_BD.faultProt);
+        AMS_Fault_Summary::Fault_ADC_Comparison_BD.setPhysicalValue(faults_BD.faultCompADC);
+        AMS_Fault_Summary::Fault_OTP_BD.setPhysicalValue(faults_BD.faultOTP);
+        AMS_Fault_Summary::Fault_Communication_BD.setPhysicalValue(faults_BD.faultComm);
+        AMS_Fault_Summary::Fault_OTUT_BD.setPhysicalValue(faults_BD.faultOTUT);
+        AMS_Fault_Summary::Fault_OVOV_BD.setPhysicalValue(faults_BD.faultOVUV);
+        AMS_Fault_Summary::Fault_System_BD.setPhysicalValue(faults_BD.faultSys);
+        AMS_Fault_Summary::Fault_Power_Rail_BD.setPhysicalValue(faults_BD.faultPwr);
+
+        AMS_Fault_Summary::Fault_Protection_S1_D1.setPhysicalValue(faults_S1_D1.faultProt);
+        AMS_Fault_Summary::Fault_ADC_Comparison_S1_D1.setPhysicalValue(faults_S1_D1.faultCompADC);
+        AMS_Fault_Summary::Fault_OTP_S1_D1.setPhysicalValue(faults_S1_D1.faultOTP);
+        AMS_Fault_Summary::Fault_Communication_S1_D1.setPhysicalValue(faults_S1_D1.faultComm);
+        AMS_Fault_Summary::Fault_OTUT_S1_D1.setPhysicalValue(faults_S1_D1.faultOTUT);
+        AMS_Fault_Summary::Fault_OVOV_S1_D1.setPhysicalValue(faults_S1_D1.faultOVUV);
+        AMS_Fault_Summary::Fault_System_S1_D1.setPhysicalValue(faults_S1_D1.faultSys);
+        AMS_Fault_Summary::Fault_Power_Rail_S1_D1.setPhysicalValue(faults_S1_D1.faultPwr);
+
+        AMS_Fault_Summary::Fault_Protection_S1_D2.setPhysicalValue(faults_S1_D2.faultProt);
+        AMS_Fault_Summary::Fault_ADC_Comparison_S1_D2.setPhysicalValue(faults_S1_D2.faultCompADC);
+        AMS_Fault_Summary::Fault_OTP_S1_D2.setPhysicalValue(faults_S1_D2.faultOTP);
+        AMS_Fault_Summary::Fault_Communication_S1_D2.setPhysicalValue(faults_S1_D2.faultComm);
+        AMS_Fault_Summary::Fault_OTUT_S1_D2.setPhysicalValue(faults_S1_D2.faultOTUT);
+        AMS_Fault_Summary::Fault_OVOV_S1_D2.setPhysicalValue(faults_S1_D2.faultOVUV);
+        AMS_Fault_Summary::Fault_System_S1_D2.setPhysicalValue(faults_S1_D2.faultSys);
+        AMS_Fault_Summary::Fault_Power_Rail_S1_D2.setPhysicalValue(faults_S1_D2.faultPwr);
     }
 
     void readCurrent(){
@@ -190,16 +192,13 @@ class AMS_Shield  {
     }
 
     void runSimulink(){
-//        externalInputs.BatteryState = BatteryMode::Driving;
-//        externalInputs.BMSCurrentInData = IVTS_Current::IVTS_Current.getPhysicalValue();
-//        bms.setExternalInputs(&externalInputs);
-//        bms.step();
-//        externalOutputs = bms.getExternalOutputs();
-//
-//        AMS_Simulink::Simulink_Voltage.setPhysicalValue(externalOutputs.BMSActualValues.Voltage);
-//        AMS_Simulink::Simulink_BatTemp.setPhysicalValue(externalOutputs.BMSActualValues.BatTemp);
-//        AMS_Simulink::Simulink_BatCurrent.setPhysicalValue(externalOutputs.BMSActualValues.BatCurrent);
-//        AMS_Simulink::Simulink_BatSOC.setPhysicalValue(externalOutputs.BMSActualValues.BatSOC);
+        externalInputs.BatteryState = BatteryMode::Driving;
+        bms.setExternalInputs(&externalInputs);
+        bms.step();
+        externalOutputs = bms.getExternalOutputs();
+
+        AMS_Simulink::Simulink_Voltage.setPhysicalValue(externalOutputs.BMSActualValues.Voltage);
+        AMS_Simulink::Simulink_BatTemp.setPhysicalValue(externalOutputs.BMSActualValues.BatTemp);
     }
 };
 

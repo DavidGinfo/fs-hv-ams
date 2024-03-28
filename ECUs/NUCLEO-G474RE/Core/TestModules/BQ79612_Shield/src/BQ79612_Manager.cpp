@@ -84,6 +84,11 @@ Status Manager::readCellVoltages(Device device, float *cellVoltages, uint8_t cel
     uint8_t v_hi = 0;
     uint8_t v_lo = 0;
     for(int8_t i = cellVoltageCount - 1; i >= 0; i--){
+        voltage_raw = 0;
+        voltage_signed = 0;
+        v_hi = 0;
+        v_lo = 0;
+
         daisyChain.readDataBuffer(&v_hi);
         daisyChain.readDataBuffer(&v_lo);
 
@@ -97,10 +102,34 @@ Status Manager::readCellVoltages(Device device, float *cellVoltages, uint8_t cel
 }
 
 // TODO function is not generic in terms of the GPIOs to activate, this is because of the shield NTCs, must be changed later
-Status Manager::setActivateGPIOADCs(Device device, uint8_t activeGPIOCount) {
-    uint8_t sendDataAGA = static_cast<uint8_t>(GPIO_Conf4::GPIO8_ADC_ONLY) | static_cast<uint8_t>(GPIO_Conf4::GPIO7_ADC_ONLY);
+Status Manager::setActivateGPIOADCs(Device device) {
+    uint8_t sendDataAGA = static_cast<uint8_t>(GPIO_Conf1::GPIO2_ADC_ONLY)
+                          | static_cast<uint8_t>(GPIO_Conf1::GPIO1_ADC_ONLY);
+    if(daisyChain.write(ReqType::SINGLE_DEVICE_WRITE, device, OTPRegister::GPIO_CONF1, &sendDataAGA, 1) != Status::COMPLETED)
+        return Status::ERROR;
+
+    Parallel::delay(10);
+
+    sendDataAGA = RESET_VALUE_0 | static_cast<uint8_t>(GPIO_Conf2::GPIO4_ADC_ONLY)
+                          | static_cast<uint8_t>(GPIO_Conf2::GPIO3_ADC_ONLY);
+    if(daisyChain.write(ReqType::SINGLE_DEVICE_WRITE, device, OTPRegister::GPIO_CONF2, &sendDataAGA, 1) != Status::COMPLETED)
+        return Status::ERROR;
+
+    Parallel::delay(10);
+
+    sendDataAGA = RESET_VALUE_0 | static_cast<uint8_t>(GPIO_Conf3::GPIO6_ADC_ONLY)
+                  | static_cast<uint8_t>(GPIO_Conf3::GPIO5_ADC_ONLY);
+    if(daisyChain.write(ReqType::SINGLE_DEVICE_WRITE, device, OTPRegister::GPIO_CONF3, &sendDataAGA, 1) != Status::COMPLETED)
+        return Status::ERROR;
+
+    Parallel::delay(10);
+
+    sendDataAGA = RESET_VALUE_0 | static_cast<uint8_t>(GPIO_Conf4::GPIO8_ADC_ONLY)
+                  | static_cast<uint8_t>(GPIO_Conf4::GPIO7_ADC_ONLY);
     if(daisyChain.write(ReqType::SINGLE_DEVICE_WRITE, device, OTPRegister::GPIO_CONF4, &sendDataAGA, 1) != Status::COMPLETED)
         return Status::ERROR;
+
+    Parallel::delay(10);
 
     sendDataAGA = RESET_VALUE_0 | static_cast<uint8_t>(Control2::TSREF_EN);
     if(daisyChain.write(ReqType::SINGLE_DEVICE_WRITE, device, ReadWriteRegister::CONTROL2, &sendDataAGA, 1) != Status::COMPLETED)
@@ -139,10 +168,10 @@ Status Manager::readCellTemperature(Device device, float *cellTemperatures, uint
     tsref_raw |= (static_cast<uint16_t>(tsref_hi) << 8) | static_cast<uint16_t>(tsref_lo);
     v_tsref = static_cast<float>(toSigned(tsref_raw)) * MAIN_ADC_RESOLUTION_TSREF;
 
-    Parallel::delay(2);
+    Parallel::delay(10);
 
     // TODO change "static_cast<ReadOnlyRegister>(ReadOnlyRegister::GPIO1_HI + 12)" to "ReadOnlyRegister::GPIO1_HI" to generalize function
-    if(daisyChain.read(ReqType::SINGLE_DEVICE_READ, device,  static_cast<ReadOnlyRegister>(static_cast<uint16_t>(ReadOnlyRegister::GPIO1_HI) + 12), cellTemperatureCount * 2) != Status::COMPLETED)
+    if(daisyChain.read(ReqType::SINGLE_DEVICE_READ, device,  ReadOnlyRegister::GPIO1_HI, cellTemperatureCount * 2) != Status::COMPLETED)
         return Status::ERROR;
 
     uint8_t gpiox_hi = 0;
@@ -154,6 +183,13 @@ Status Manager::readCellTemperature(Device device, float *cellTemperatures, uint
 
     // TODO werte zurücksetzen auf 0
     for(uint8_t i = 0; i < cellTemperatureCount; i++){
+        gpiox_hi = 0;
+        gpiox_lo = 0;
+        gpiox_raw = 0;
+        gpiox_signed = 0;
+        gpiox_voltage  = 0;
+        r_ntc = 0;
+
         daisyChain.readDataBuffer(&gpiox_hi);
         daisyChain.readDataBuffer(&gpiox_lo);
 
