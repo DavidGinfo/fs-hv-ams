@@ -1,6 +1,8 @@
 #pragma once
+#include "main.h"
 
 #include "BQ79612.h"
+
 
 namespace BQ79612 {
 
@@ -10,10 +12,10 @@ namespace BQ79612 {
         Manager(Manager &) = delete;
         Manager(Manager &&) = delete;
 
-        Manager(DaisyChain daisyChain);
+        explicit Manager(Parallel::BinaryChannel &c, GPIO::Pin u_tx, GPIO::Pin u_rx);
 //        explicit Manager(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
 
-        void wake();
+        void wake(UART_HandleTypeDef uh, TIM_HandleTypeDef th, uint8_t dc);
         void sleep();
         void shutdown();
 
@@ -26,8 +28,7 @@ namespace BQ79612 {
         Status readDieTemperature(float *dieTemperature);
         Status getFaultSummary(Device device, FaultSummary *faults);
       private:
-        DaisyChain daisyChain;
-
+        DaisyChain daisyChainAMS;
 
     };
 }

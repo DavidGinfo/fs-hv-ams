@@ -9,6 +9,6 @@ namespace CAN {
       initBuses();
       initPeripherals();
       initTimer();
-      initManagers();
+//      initManagers();
   }
 }

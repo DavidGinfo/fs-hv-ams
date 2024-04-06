@@ -1,7 +1,7 @@
 #pragma once
 #include <util/Common.h>
 
-#define CAN_TIMER_PERIOD 1
+#define CAN_TIMER_PERIOD 10
 
 namespace CAN {
   inline constexpr uint32_t TIMER_MAX_VALUE = 0xFFFFFFFF;

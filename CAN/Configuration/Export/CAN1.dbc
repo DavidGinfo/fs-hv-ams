@@ -33,129 +33,845 @@ NS_ :
 
 BS_:
 
-BU_: AMS_Shield
+BU_: BMS BSPD DMI SMU_F SMU_R YMU MS6 SW TCU PDU Logger
+VAL_TABLE_ Error_BMS 3 "OVERTEMPERATURE" 2 "OVERCURRENT" 1 "UNDERVOLTAGE" 0 "OK" ;
+VAL_TABLE_ BSPD_Emergency 1 "BSPD OK" 0 "Emergancy Open " ;
+VAL_TABLE_ FuncSwPos 5 "AutoX" 4 "Endurance" 3 "SkidPad" 2 "AccA" 1 "AccM" 0 "Error" ;
 
 
 BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
- SG_ Simulink_BatSOC : 0|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
- SG_ Simulink_BatCurrent : 0|14@1+ (0.01,0) [0|163.83] "A" Vector__XXX
+ SG_ MSG_CNT_TX3 : 0|4@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ CRC_TX3 : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ AZ_STAT : 0|4@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ AZ : 0|16@1+ (0.000127465,-4.1768) [-4.1768|4.1765] "g" Vector__XXX
+ SG_ CRC_TX2 : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ PSIP3_STAT : 0|4@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ PSIP3 : 0|16@1+ (0.005,-163.84) [-163.84|163.835] "°/s" Vector__XXX
+ SG_ MSG_CNT_TX2 : 0|4@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ CLU_STAT5 : 0|4@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ CLU_DIAG : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ AX1_STAT : 0|4@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ AX1 : 0|16@1+ (0.000127465,-4.1768) [-4.1768|4.1765] "g" Vector__XXX
+ SG_ PSIP1_STAT : 0|4@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ PSIP1 : 0|16@1+ (0.005,-163.84) [-163.84|163.83] "°/s" Vector__XXX
+ SG_ MSG_CNT_TX1 : 0|4@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ CRC_TX1 : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ CLU_STAT : 0|4@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ AY1_STAT : 0|4@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ AY1 : 0|16@1+ (0.000127465,-4.1768) [-4.1768|4.1765] "g" Vector__XXX
+ SG_ TmpTypK1_TKU : 0|14@1- (0.25,0) [-250|1600] "" Vector__XXX
 
-BO_ 34 New_Message_15: 8 AMS_Shield
- SG_ Voltage_Cell01 : 0|10@1+ (0.01,0) [0|10.23] "V" Vector__XXX
+BO_ 1552 BMS_State: 2 BMS
+ SG_ HBat_Relay_R : 15|1@1+ (1,0) [0|1] ""  Logger
+ SG_ HBat_Relay_L : 14|1@1+ (1,0) [0|1] ""  Logger
+ SG_ Error_BMS : 8|6@1+ (1,0) [0|63] ""  Logger
+ SG_ Alive_BMS : 0|8@1+ (1,0) [0|255] ""  Logger
 
-BO_ 512 AMS_Current: 8 AMS_Shield
- SG_ TS_Current : 0|18@1- (0.001,0) [-131.072|131.071] "A" Vector__XXX
+BO_ 856 BMS_Current: 3 BMS
+ SG_ HBat_Current_R : 12|12@1- (0.2,0) [-300|300] "A"  Logger
+ SG_ HBat_Current_L : 0|12@1- (0.2,0) [-300|300] "A"  Logger
 
-BO_ 7 AMS_CellTemperatures_Extra: 5 AMS_Shield
- SG_ Temperature_Cell_Extra4 : 30|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Temperature_Cell_Extra3 : 20|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Temperature_Cell_Extra2 : 10|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Temperature_Cell_Extra1 : 0|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
+BO_ 876 BMS_Temperatures_4: 4 BMS
+ SG_ HBat_T21 : 20|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T20 : 10|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T19 : 0|10@1+ (0.1,0) [0|80] "°C"  Logger
 
-BO_ 6 AMS_CellTemperatures2: 8 AMS_Shield
- SG_ Temperature_Cell12 : 50|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Temperature_Cell11 : 40|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Temperature_Cell10 : 30|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Temperature_Cell09 : 20|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Temperature_Cell08 : 10|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Temperature_Cell07 : 0|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
+BO_ 872 BMS_Temperatures_3: 8 BMS
+ SG_ HBat_T18 : 50|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T17 : 40|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T16 : 30|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T15 : 20|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T14 : 10|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T13 : 0|10@1+ (0.1,0) [0|80] "°C"  Logger
 
-BO_ 115 AMS_CellVoltages3: 8 AMS_Shield
- SG_ Voltage_Cell12 : 48|10@1+ (0.01,0) [0|8.191] "V" Vector__XXX
- SG_ Voltage_Cell11 : 32|10@1+ (0.01,0) [0|8.191] "V" Vector__XXX
- SG_ Voltage_Cell10 : 16|10@1+ (0.01,0) [0|8.191] "V" Vector__XXX
- SG_ Voltage_Cell09 : 0|10@1+ (0.01,0) [0|8.191] "V" Vector__XXX
+BO_ 868 BMS_Temperatures_2: 8 BMS
+ SG_ HBat_T12 : 50|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T11 : 40|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T10 : 30|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T09 : 20|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T08 : 10|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T07 : 0|10@1+ (0.1,0) [0|80] "°C"  Logger
 
-BO_ 101 AMS_CellVoltages2: 8 AMS_Shield
- SG_ Voltage_Cell12 : 50|10@1+ (0.01,0) [0|8.191] "V" Vector__XXX
- SG_ Voltage_Cell11 : 40|10@1+ (0.01,0) [0|8.191] "V" Vector__XXX
- SG_ Voltage_Cell10 : 10|10@1+ (0.01,0) [0|8.191] "V" Vector__XXX
- SG_ Voltage_Cell09 : 0|10@1+ (0.01,0) [0|8.191] "V" Vector__XXX
- SG_ Voltage_Cell08 : 30|10@1+ (0.01,0) [0|8.191] "V" Vector__XXX
- SG_ Voltage_Cell07 : 20|10@1+ (0.01,0) [0|8.191] "V" Vector__XXX
+BO_ 864 BMS_Temperatures_1: 8 BMS
+ SG_ HBat_T06 : 50|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T05 : 40|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T04 : 30|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T03 : 20|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T02 : 10|10@1+ (0.1,0) [0|80] "°C"  Logger
+ SG_ HBat_T01 : 0|10@1+ (0.1,0) [0|80] "°C"  Logger
 
-BO_ 1313 IVTS_Current: 6 Vector__XXX
- SG_ IVTS_Current : 23|32@0- (1,0) [-2147483648|2147483647] "mA"  AMS_Shield
+BO_ 852 BMS_Voltages_2: 8 BMS
+ SG_ HBat_V14 : 54|9@1+ (0.01,0) [0|4.5] "V"  Logger
+ SG_ HBat_V13 : 45|9@1+ (0.01,0) [0|4.5] "V"  Logger
+ SG_ HBat_V12 : 36|9@1+ (0.01,0) [0|4.5] "V"  Logger
+ SG_ HBat_V11 : 27|9@1+ (0.01,0) [0|4.5] "V"  Logger
+ SG_ HBat_V10 : 18|9@1+ (0.01,0) [0|4.5] "V"  Logger
+ SG_ HBat_V09 : 9|9@1+ (0.01,0) [0|4.5] "V"  Logger
+ SG_ HBat_V08 : 0|9@1+ (0.01,0) [0|4.5] "V"  Logger
 
-BO_ 16 AMS_Simulink: 8 AMS_Shield
- SG_ Max_Temperature : 36|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Min_Temperature : 26|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Simulink_BatTemp : 16|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Simulink_Voltage : 0|16@1+ (0.001,0) [0|65.535] "V" Vector__XXX
+BO_ 848 BMS_Voltages_1: 8 BMS
+ SG_ HBat_V07 : 54|9@1+ (0.01,0) [0|4.5] "V"  Logger
+ SG_ HBat_V06 : 45|9@1+ (0.01,0) [0|4.5] "V"  Logger
+ SG_ HBat_V05 : 36|9@1+ (0.01,0) [0|4.5] "V"  Logger
+ SG_ HBat_V04 : 27|9@1+ (0.01,0) [0|4.5] "V"  Logger
+ SG_ HBat_V03 : 18|9@1+ (0.01,0) [0|4.5] "V"  Logger
+ SG_ HBat_V02 : 9|9@1+ (0.01,0) [0|4.5] "V"  Logger
+ SG_ HBat_V01 : 0|9@1+ (0.01,0) [0|4.5] "V"  Logger
 
-BO_ 48 AMS_Fault_Summary: 3 AMS_Shield
- SG_ Fault_System_S1_D2 : 22|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_System_S1_D1 : 14|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_Protection_S1_D2 : 16|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_Protection_S1_D1 : 8|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_Power_Rail_S1_D2 : 23|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_Power_Rail_S1_D1 : 15|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_OVOV_S1_D2 : 21|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_OVOV_S1_D1 : 13|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_OTUT_S1_D2 : 20|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_OTUT_S1_D1 : 12|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_OTP_S1_D2 : 18|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_OTP_S1_D1 : 10|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_Communication_S1_D2 : 19|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_Communication_S1_D1 : 11|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_ADC_Comparison_S1_D2 : 17|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_ADC_Comparison_S1_D1 : 9|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_Power_Rail_BD : 7|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_System_BD : 6|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_OVOV_BD : 5|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_OTUT_BD : 4|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_Communication_BD : 3|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_OTP_BD : 2|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_ADC_Comparison_BD : 1|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ Fault_Protection_BD : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+BO_ 257 MS6_Car_1: 8 MS6
+ SG_ speed : 0|16@1+ (0.01,0) [0|400] "km/h"  DMI,TCU,Logger
+ SG_ B_erract_tmot : 23|1@1+ (1,0) [0|1] ""  DMI,Logger
+ SG_ B_erract_pbrake_r : 21|1@1+ (1,0) [0|1] ""  DMI,Logger
+ SG_ B_erract_pbrake_f : 20|1@1+ (1,0) [0|1] ""  DMI,Logger
 
-BO_ 65 AMS_CellVoltages1: 8 AMS_Shield
- SG_ Voltage_Cell06 : 50|10@1+ (0.01,0) [0|8.191] "V" Vector__XXX
- SG_ Voltage_Cell05 : 40|10@1+ (0.01,0) [0|10.23] "V" Vector__XXX
- SG_ Voltage_Cell04 : 30|10@1+ (0.01,0) [0|8.191] "V" Vector__XXX
- SG_ Voltage_Cell03 : 10|10@1+ (0.01,0) [0|10.23] "V" Vector__XXX
- SG_ Voltage_Cell02 : 20|10@1+ (0.01,0) [0|10.23] "V" Vector__XXX
- SG_ Voltage_Cell01 : 0|10@1+ (0.01,0) [0|10.23] "V" Vector__XXX
+BO_ 256 MS6_Car: 8 MS6
+ SG_ nmot : 0|16@1+ (1,0) [0|20000] "rpm"  DMI,TCU,Logger
+ SG_ gear : 16|8@1+ (1,0) [-1|12] ""  DMI,TCU,Logger
+ SG_ tmot : 24|8@1+ (1,-40) [40|120] "°C"  DMI,Logger
+ SG_ pbrake_f : 32|16@1+ (0.005,0) [0|150] "bar"  DMI,Logger
+ SG_ pbrake_r : 48|16@1+ (0.005,0) [0|150] "bar"  DMI,Logger
 
-BO_ 32 AMS_DieTemperatures: 5 AMS_Shield
- SG_ Temperature_Die_S1_D2 : 22|11@1+ (0.1,0) [0|204.7] "°C" Vector__XXX
- SG_ Temperature_Die_S1_D1 : 11|11@1+ (0.1,0) [0|204.7] "°C" Vector__XXX
- SG_ Temperature_Die_BD : 0|11@1+ (0.1,0) [0|204.7] "°C" Vector__XXX
+BO_ 1093 SMU_R_Temp: 8 SMU_R
+ SG_ TmpTypK1_SMU_R : 0|14@1- (0.25,0) [-200|1600] "°C"  Logger
+ SG_ TmpTypK3Err_SMU_R : 56|1@1+ (1,0) [0|1] ""  Logger
+ SG_ TmpTypK3_SMU_R : 40|14@1- (0.25,0) [-200|1600] "°C"  Logger
+ SG_ TmpTypK2Err_SMU_R : 32|1@1+ (1,0) [0|1] ""  Logger
+ SG_ TmpTypK2_SMU_R : 16|14@1- (0.25,0) [-200|1600] "°C"  Logger
+ SG_ TmpTypK1Err_SMU_R : 14|1@1+ (1,0) [0|1] ""  Logger
 
-BO_ 5 AMS_CellTemperatures1: 8 AMS_Shield
- SG_ Temperature_Cell06 : 50|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Temperature_Cell05 : 40|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Temperature_Cell04 : 30|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Temperature_Cell03 : 20|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Temperature_Cell02 : 10|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
- SG_ Temperature_Cell01 : 0|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
+BO_ 1649 YMU_Gyro: 6 YMU
+ SG_ Gyro_Z_YMU : 32|16@1- (0.0076294,0) [-250.0001792|249.9925498] ""  Logger
+ SG_ Gyro_Y_YMU : 16|16@1- (0.0076294,0) [-250.0001792|249.9925498] ""  Logger
+ SG_ Gyro_X_YMU : 0|16@1- (0.0076294,0) [-250.0001792|249.9925498] ""  Logger
+
+BO_ 1648 YMU_Accel: 7 YMU
+ SG_ Accel_Z_YMU : 32|16@1- (0.00012207,0) [-3.99998976|3.99986769] ""  Logger
+ SG_ Accel_Y_YMU : 16|16@1- (0.00012207,0) [-3.99998976|3.99986769] ""  Logger
+ SG_ Accel_X_YMU : 0|16@1- (0.00012207,0) [-3.99998976|3.99986769] ""  Logger
+ SG_ YMU_Standstill : 48|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 787 MS6_INJCALC: 8 MS6
+ SG_ tint : 0|8@1+ (1,-40) [10|60] "°C"  Logger
+ SG_ p22 : 8|16@1+ (0.1,0) [0|2000] "mbar"  Logger
+ SG_ pamb : 24|16@1+ (0.1,0) [0|2000] "mbar"  Logger
+ SG_ rl : 40|16@1+ (0.1,0) [0|500] "%"  Logger
+ SG_ B_stend : 63|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_fco : 62|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_st : 61|1@1+ (1,0) [0|1] ""  Logger
+
+BO_ 800 MS6_IGN_SYS: 8 MS6
+ SG_ tdwell : 0|8@1+ (0.1,0) [0|25.5] "ms"  Logger
+ SG_ E_psdia_ign01 : 8|8@1+ (1,0) [0|255] ""  Logger
+ SG_ E_crank : 16|8@1+ (1,0) [0|1] ""  Logger
+ SG_ E_cam : 24|8@1+ (1,0) [0|1] ""  Logger
+ SG_ B_ignoff_launch : 39|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_ignoff_gc : 38|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_ign_all : 37|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_ign_angleprio : 36|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_fco_en_st : 35|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_fco_en : 34|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_trq_ign : 33|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_trq_gbctrl : 32|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_igntest_en : 47|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_ignoff_trq : 46|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_igninj_enable : 45|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_ignadv : 44|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_igninj_enable_cam : 43|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_ignoff_fco : 42|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_ignoff_pit : 41|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_ignoff_nmax : 40|1@1+ (1,0) [0|1] ""  Logger
+ SG_ ssyncstate : 56|8@1+ (1,0) [0|255] ""  Logger
+ SG_ syncstate : 48|8@1+ (1,0) [0|255] ""  Logger
+
+BO_ 788 MS6_INJCALC1: 8 MS6
+ SG_ f_injstart : 0|16@1+ (0.01,0) [1|50] ""  Logger
+ SG_ f_injpc : 16|16@1+ (0.01,0) [1|50] ""  Logger
+ SG_ f_injwarmup : 32|8@1+ (0.01,0) [1|2] ""  Logger
+ SG_ f_injcutin : 40|16@1+ (0.01,0) [1|5] ""  Logger
+ SG_ f_injpstart : 63|1@1+ (1,0) [0|1] ""  Logger
+
+BO_ 802 MS6_LC: 8 MS6
+ SG_ lamnom : 0|8@1+ (0.01,0) [0.5|1.5] ""  Logger
+ SG_ texh : 8|16@1+ (0.1,0) [0|1250] "°C"  Logger
+ SG_ lamctrl_i : 24|8@1+ (0.05,0) [0.5|5] ""  Logger
+ SG_ lamctrl_p : 56|8@1+ (0.005,0) [0.05|0.5] ""  Logger
+ SG_ flc_i : 32|8@1+ (0.005,0) [-0.3|0.3] ""  Logger
+ SG_ flc_p : 40|8@1+ (0.005,0) [-0.3|0.3] ""  Logger
+ SG_ lamdiff : 48|8@1+ (0.005,0) [-0.3|0.3] ""  Logger
+
+BO_ 517 MS6_LC_1: 8 MS6
+ SG_ te : 0|16@1+ (0.01,0) [0|100] "ms"  Logger
+ SG_ ign_start : 16|8@1+ (0.5,0) [-30|60] "°CR"  Logger
+ SG_ ign_out : 24|16@1+ (0.1,0) [-30|80] "°CR"  Logger
+ SG_ nidle : 40|16@1+ (0.5,0) [0|3000] "rpm"  Logger
+ SG_ B_idle : 63|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_idlectrl : 62|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_stend : 61|1@1+ (1,0) [0|1] ""  Logger
+
+BO_ 518 MS6_ETC_1: 8 MS6
+ SG_ etc_dp : 0|16@1+ (1,0) [-32768|32767] "%"  Logger
+ SG_ etc_ip : 16|16@1+ (1,0) [-32768|32767] "%"  Logger
+ SG_ etc_pp : 32|16@1+ (1,0) [-32768|32767] "%"  Logger
+ SG_ etc_pwm : 48|16@1+ (0.01,0) [-100|100] "%"  Logger
+
+BO_ 776 MS6_TC: 8 MS6
+ SG_ dslip : 0|16@1+ (0.1,0) [-100|100] "%"  Logger
+ SG_ fslip_driv : 16|8@1+ (0.01,0) [0|2] ""  Logger
+ SG_ fslip_acc : 24|8@1+ (0.01,0) [0|1] ""  Logger
+ SG_ slip_max : 32|8@1+ (0.1,0) [0|20] "%"  Logger
+ SG_ slip_hand : 40|8@1+ (0.1,0) [0|20] "%"  Logger
+ SG_ slip_nom : 48|8@1+ (0.1,0) [0|20] "%"  Logger
+
+BO_ 777 MS6_TC1: 8 MS6
+ SG_ slip_rl : 0|16@1+ (0.1,0) [-100|100] "%"  Logger
+ SG_ slip_rr : 16|16@1+ (0.1,0) [-100|100] "%"  Logger
+ SG_ slip_act : 32|16@1+ (0.1,0) [-100|100] "%"  Logger
+ SG_ mi_tc : 48|8@1+ (0.5,0) [0|100] "%"  Logger
+
+BO_ 786 MS6_TC_DP: 8 MS6
+ SG_ tc_dp_fac : 0|16@1+ (0.001,0) [0|4] ""  Logger
+ SG_ mi_tc_dp_r : 16|16@1+ (0.005,0) [-150|150] "%"  Logger
+ SG_ mi_tc_dp : 32|16@1+ (0.005,0) [-150|150] "%"  Logger
+ SG_ tc_fdp_r : 48|16@1+ (0.01,0) [-200|200] "%"  Logger
+
+BO_ 769 MS6_Fuelsystem: 8 MS6
+ SG_ fpump_pwm : 16|16@1+ (0.01,0) [0|110] "%"  Logger
+ SG_ pfuel : 0|8@1+ (0.05,0) [0|10] "bar"  Logger
+ SG_ tfuel : 8|8@1+ (1,-40) [10|80] "°C"  Logger
+ SG_ pfuel_ip : 32|16@1+ (0.01,0) [-50|50] "%"  Logger
+ SG_ pfuel_pp : 48|16@1+ (0.01,0) [-50|50] "%"  Logger
+
+BO_ 770 MS6_ETC_SCS: 8 MS6
+ SG_ ath : 0|16@1+ (0.01,0) [0|110] "%"  Logger
+ SG_ ath_b : 16|16@1+ (0.01,0) [0|110] "%"  Logger
+ SG_ aps : 32|16@1+ (0.01,0) [0|100] "%"  Logger
+ SG_ B_err_apscal : 55|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_err_aps_pbrake : 54|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_err_etcdiffneg : 53|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_err_thrpot : 52|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_err_apssig : 51|1@1+ (1,0) [0|1] ""  Logger
+
+BO_ 771 MS6_ETC_SCS_Voltage: 8 MS6
+ SG_ uaps_a : 0|16@1+ (0.001,0) [0|5] "V"  Logger
+ SG_ uaps_b : 16|16@1+ (0.001,0) [0|5] "V"  Logger
+ SG_ uthrottle : 32|16@1+ (0.001,0) [0|5] "V"  Logger
+ SG_ uthrottle_b : 48|16@1+ (0.001,0) [0|5] "V"  Logger
+
+BO_ 1056 BSPD_Information: 7 BSPD
+ SG_ BP_REAR_REF_BSPD : 48|8@1+ (1,0) [0|250] ""  Logger
+ SG_ BP_FRONT_REF_BSPD : 32|8@1+ (1,0) [0|250] ""  Logger
+ SG_ BP_REAR_BSPD : 40|8@1+ (1,0) [0|250] ""  Logger
+ SG_ BP_FRONT_BSPD : 24|8@1+ (1,0) [0|250] ""  Logger
+ SG_ TPS_REF_BSPD : 16|8@1+ (0.5,0) [0|100] ""  Logger
+ SG_ TPS_BSPD : 8|8@1+ (0.5,0) [0|100] ""  Logger
+ SG_ TPS_B_LOGIC_BSPD : 2|1@1+ (1,0) [0|1] ""  Logger
+ SG_ TPS_A_LOGIC_BSPD : 4|1@1+ (1,0) [0|1] ""  Logger
+ SG_ EMERGENCY_BSPD : 1|1@1+ (1,0) [0|1] ""  Logger
+ SG_ BP_FRONT_LOGIC_BSPD : 0|1@1+ (1,0) [0|1] ""  Logger
+ SG_ BP_REAR_LOGIC_BSPD : 3|1@1+ (1,0) [0|1] ""  Logger
+ SG_ Logic_Kill_BSPD : 5|1@1+ (1,0) [0|1] ""  Logger
+
+BO_ 1856 BSPD_State: 8 BSPD
+ SG_ Alive_BSPD : 0|8@1+ (1,0) [0|255] ""  Logger
+
+BO_ 1058 BSPD_RAW2: 6 BSPD
+ SG_ BP_REAR_REF_VOLTAGE_BSPD : 36|12@1+ (0.0015004,0) [0|6.144138] "V"  Logger
+ SG_ BP_FRONT_REF_VOLTAGE_BSPD : 24|12@1+ (0.0015004,0) [0|6.144138] "V"  Logger
+ SG_ BP_REAR_VOLTAGE_BSPD : 12|12@1+ (0.0015004,0) [0|6.144138] "V"  Logger
+ SG_ BP_FRONT_VOLTAGE_BSPD : 0|12@1+ (0.0015004,0) [0|6.144138] "V"  Logger
+
+BO_ 1057 BSPD_RAW1: 6 BSPD
+ SG_ TPS_B_REF_VOLTAGE_BSPD : 36|12@1+ (0.0015004,0) [0|6.144138] "V"  Logger
+ SG_ TPS_A_REF_VOLTAGE_BSPD : 24|12@1+ (0.0015004,0) [0|6.144138] "V"  Logger
+ SG_ TPS_A_VOLTAGE_BSPD : 12|12@1+ (0.0015004,0) [0|6.144138] "V"  Logger
+ SG_ TPS_B_VOLTAGE_BSPD : 0|12@1+ (0.0015004,0) [0|6.144138] "V"  Logger
+
+BO_ 1072 MS6_ETC_Limit: 8 MS6
+ SG_ uthr_P2 : 16|16@1+ (0.001,0) [0|5] "V"  BSPD,Logger
+ SG_ uthr_P1 : 0|16@1+ (0.001,0) [0|5] "V"  BSPD,Logger
+
+BO_ 1653 YMU_Gyro_Raw: 6 YMU
+ SG_ Gyro_Z_YMU_Raw : 32|16@1- (0.0076294,0) [-250.0001792|249.9925498] ""  Logger
+ SG_ Gyro_Y_YMU_Raw : 16|16@1- (0.0076294,0) [-250.0001792|249.9925498] ""  Logger
+ SG_ Gyro_X_YMU_Raw : 0|16@1- (0.0076294,0) [-250.0001792|249.9925498] ""  Logger
+
+BO_ 336 TCU_Fuel: 2 TCU
+ SG_ FuelPumpRPM_TCU : 0|16@1+ (1,0) [0|65535] ""  Logger
+
+BO_ 1576 TCU_BinarySwitch_MS6: 8 TCU
+ SG_ B_WetSw_can_TCU : 6|1@1+ (1,0) [0|1] ""  MS6,Logger
+ SG_ B_LaunchSw_can_TCU : 3|1@1+ (1,0) [0|1] ""  MS6,Logger
+
+BO_ 1568 SW_Rotary_MS6: 8 SW
+ SG_ TCSw_SW : 32|8@1+ (1,0) [0|13] ""  MS6,Logger
+ SG_ FuncSw_can_SW : 16|8@1+ (1,0) [0|10] ""  MS6,Logger
+ SG_ MapSw_can_SW : 0|8@1+ (1,0) [0|3] ""  MS6,Logger
+
+BO_ 593 SW_SwitchesButtons: 2 SW
+ SG_ PB_Multifunction2_SW : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Rot_TracCtrPos_SW : 12|4@1+ (1,0) [1|12] ""  TCU,Logger
+ SG_ Rot_EventPos_SW : 5|3@1+ (1,0) [1|6] ""  Logger,TCU
+ SG_ Rot_ClutchPos_SW : 8|4@1+ (1,0) [1|12] ""  Logger,TCU
+ SG_ PB_LC_SW : 2|1@1+ (1,0) [0|1] ""  Logger,TCU
+ SG_ PB_Multifunction1_SW : 1|1@1+ (1,0) [0|1] ""  Logger,TCU
+ SG_ PB_CHAct_SW : 0|1@1+ (1,0) [0|1] ""  Logger,TCU
+
+BO_ 592 SW_ClutchInfo: 4 SW
+ SG_ ClutchRightDuty_RAW_SW : 16|16@1+ (0.00152590218966964,0) [0|100] "RAW"  Logger
+ SG_ ClutchLeftDuty_RAW_SW : 0|16@1+ (0.00152590218966964,0) [0|100] "RAW"  Logger
+
+BO_ 1652 YMU_Accel_Raw: 6 YMU
+ SG_ Accel_Z_YMU_Raw : 32|16@1- (0.00012207,0) [-3.99998976|3.99986769] ""  Logger
+ SG_ Accel_Y_YMU_Raw : 16|16@1- (0.00012207,0) [-3.99998976|3.99986769] ""  Logger
+ SG_ Accel_X_YMU_Raw : 0|16@1- (0.00012207,0) [-3.99998976|3.99986769] ""  Logger
+
+BO_ 594 SW_ClutchInfo2: 8 SW
+ SG_ ClutchRightPWMPeriode_SW : 48|16@1+ (1,0) [0|65535] ""  Logger
+ SG_ ClutchLeftPWMPeriode_SW : 32|16@1+ (1,0) [0|65535] ""  Logger
+ SG_ ClutchLeftOnTime_SW : 16|16@1+ (1,0) [0|65535] ""  Logger
+ SG_ ClutchRightOnTime_SW : 0|16@1+ (1,0) [0|65535] ""  Logger
+
+BO_ 1059 BSPD_ErrClkInfo: 3 BSPD
+ SG_ ShutOffTime_BSPD : 16|8@1+ (3.90625,0) [0|500] "ms"  Logger
+ SG_ TimeToReset_BSPD : 0|12@1+ (0.00390625,0) [0|10] "s"  Logger
+
+BO_ 772 MS6_ETC_Errors: 8 MS6
+ SG_ E_aps : 0|8@1+ (1,0) [0|255] ""  Logger
+ SG_ E_thr : 8|8@1+ (1,0) [0|255] ""  Logger
+ SG_ E_pbrake_f : 16|8@1+ (1,0) [0|255] ""  Logger
+ SG_ E_pbrake_r : 24|8@1+ (1,0) [0|255] ""  Logger
+ SG_ E_etccal : 32|8@1+ (1,0) [0|255] ""  Logger
+ SG_ E_etcdiff : 40|8@1+ (1,0) [0|255] ""  Logger
+ SG_ E_psdia_etc : 48|8@1+ (1,0) [0|255] ""  Logger
+ SG_ E_ub : 56|8@1+ (1,0) [0|255] ""  Logger
+
+BO_ 806 MS6_GBCTRL_1: 8 MS6
+ SG_ gear_gc_msh : 0|8@1+ (1,0) [-1|12] ""  Logger
+ SG_ cutoff_gc : 8|16@1+ (1,0) [0|5000] ""  Logger
+ SG_ cutoff_act : 24|16@1+ (1,0) [0|4095] ""  Logger
+ SG_ E_gearpoti : 48|8@1+ (1,0) [0|255] ""  Logger
+ SG_ E_gsh_msh : 40|8@1+ (1,0) [0|255] ""  Logger
+ SG_ B_engrun : 63|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_engon : 62|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_nmot : 61|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_gearp : 60|1@1+ (1,0) [0|1] ""  Logger
+
+BO_ 805 MS6_GBCTRL: 8 MS6
+ SG_ ugs : 0|16@1+ (0.001,0) [0|5] "V"  Logger
+ SG_ f_injgc_msh : 16|8@1+ (0.01,0) [0|2] ""  Logger
+ SG_ ign_gc_msh : 24|8@1+ (0.5,0) [-30|60] "°CR"  Logger
+ SG_ tgc_phs4_msh : 32|16@1+ (0.001,0) [0|2] "sec"  Logger
+ SG_ B_cutoff_gc_msh : 55|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_shdn_msh : 54|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_gsshup_msh : 53|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_gsshdn_msh : 52|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_gc_fin_msh : 51|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_gc : 50|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_gc_run_msh : 49|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_gc_msh : 48|1@1+ (1,0) [0|1] ""  Logger
+
+BO_ 258 MS6_Dash: 8 MS6
+ SG_ poil : 0|8@1+ (0.05,0) [0|10] "bar"  DMI,Logger
+ SG_ toil : 8|8@1+ (1,-40) [60|150] "°C"  DMI,Logger
+ SG_ mappos : 16|8@1+ (1,0) [0|3] ""  DMI,TCU,Logger
+ SG_ ub : 24|16@1+ (0.001,0) [0|65.535] "V"  DMI,Logger
+ SG_ B_launch : 57|1@1+ (1,0) [0|1] ""  DMI,Logger
+ SG_ B_wetsw : 56|1@1+ (1,0) [0|1] ""  DMI,Logger
+ SG_ funcpos : 40|8@1+ (1,0) [0|12] ""  DMI,TCU,Logger
+
+BO_ 773 MS6_ETC_Ctrl: 8 MS6
+ SG_ etc_dp : 0|16@1+ (1,0) [-32768|32767] "%"  Logger
+ SG_ etc_ip : 16|16@1+ (1,0) [-32768|32767] "%"  Logger
+ SG_ etc_pp : 32|16@1+ (1,0) [-32768|32767] "%"  Logger
+ SG_ etc_pwm : 48|16@1+ (0.01,0) [-100|100] "%"  Logger
+
+BO_ 774 MS6_ETC_Ctrl1: 8 MS6
+ SG_ athdiff : 0|16@1+ (0.005,0) [-100|100] "%"  Logger
+ SG_ athnom_aps : 16|16@1+ (0.01,0) [0|100] "%"  Logger
+ SG_ athtrqdec : 32|16@1+ (0.01,0) [-100|0] "%"  Logger
+ SG_ dmi_etc : 48|16@1+ (0.01,0) [-120|120] "%"  Logger
+
+BO_ 775 MS6_ETC_Cond: 8 MS6
+ SG_ athnom : 8|16@1+ (0.01,0) [0|100] "%"  Logger
+ SG_ B_idlectrl : 7|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_idle : 6|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_etc1_diagdis : 5|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_etccal_active : 4|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_etc_pwrstag_dis : 3|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_igninj_disable_etc : 2|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_igninj_dis_etc : 1|1@1+ (1,0) [0|1] ""  Logger
+ SG_ etc_cal_case : 24|8@1+ (1,0) [0|4] ""  Logger
+ SG_ etccal_pwm : 32|16@1+ (0.01,0) [-100|100] "%"  Logger
+ SG_ dath : 48|16@1+ (0.1,0) [-3000|3000] "%/sec"  Logger
+
+BO_ 789 MS6_INJCALC2: 8 MS6
+ SG_ rfm_trans_lt : 0|16@1+ (0.01,0) [-200|200] "%"  Logger
+ SG_ rfm_trans_thr : 16|16@1+ (0.01,0) [-20|20] "%"  Logger
+ SG_ B_transcomp : 38|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_transcomp_en : 39|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_trans_dec : 37|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_trans_acc : 36|1@1+ (1,0) [0|1] ""  Logger
+ SG_ rfm : 40|16@1+ (0.01,0) [0|400] "%"  Logger
+ SG_ E_pamb : 56|8@1+ (1,0) [0|255] ""  Logger
+
+BO_ 790 MS6_INJCALC3: 8 MS6
+ SG_ E_tfuel : 56|8@1+ (1,0) [0|255] ""  Logger
+ SG_ flc : 0|8@1+ (0.005,0.36) [0.5|1.5] ""  Logger
+ SG_ f_inj_gbc : 8|16@1+ (0.001,0) [0|5] ""  Logger
+ SG_ frfmte : 24|16@1+ (1E-005,0) [0|0.5] ""  Logger
+ SG_ ugearp : 40|16@1+ (0.001,0) [0|5] "V"  Logger
+
+BO_ 791 MS6_INJCALC4: 8 MS6
+ SG_ pfuelabs : 16|8@1+ (0.05,0) [0|10] "bar"  Logger
+ SG_ fprailcor : 0|16@1+ (0.001,0) [0.2|5] ""  Logger
+ SG_ p22_eff : 24|16@1+ (1,0) [0|5000] "mbar"  Logger
+ SG_ tinj : 40|16@1+ (0.01,0) [0|50] "ms"  Logger
+ SG_ E_tint : 56|8@1+ (1,0) [0|255] ""  Logger
+
+BO_ 792 MS6_INJCALC5: 8 MS6
+ SG_ aoinj : 0|16@1+ (1,0) [0|900] "°CR"  Logger
+ SG_ tdtevlv : 16|8@1+ (0.02,0) [-2|2] "ms"  Logger
+ SG_ aoinj_out : 24|16@1+ (1,0) [0|900] "°CR"  Logger
+ SG_ E_psdia_lpinj01 : 40|8@1+ (1,0) [0|255] ""  Logger
+ SG_ E_pfuel : 48|8@1+ (1,0) [0|255] ""  Logger
+ SG_ E_p22 : 56|8@1+ (1,0) [0|255] ""  Logger
+
+BO_ 807 MS6_LAUNCH: 8 MS6
+ SG_ mi_launch : 0|8@1+ (0.5,0) [0|100] "%"  Logger
+ SG_ E_speed : 8|8@1+ (1,0) [0|255] ""  Logger
+ SG_ B_wetsw : 23|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_injoff_launch : 22|1@1+ (1,0) [0|1] ""  Logger
+ SG_ dnlaunch : 24|16@1+ (1,0) [-10000|10000] "rpm"  Logger
+ SG_ speed_front : 40|16@1+ (0.01,0) [0|400] "km/h"  Logger
+
+BO_ 784 MS6_TC_IP: 8 MS6
+ SG_ tc_fip : 0|16@1+ (0.01,0) [0|500] ""  Logger
+ SG_ mi_tc_ip : 16|8@1+ (1,0) [-100|100] "%"  Logger
+ SG_ ftcip_mix : 24|16@1+ (0.001,0) [0|1] ""  Logger
+ SG_ mi_tc_ip_red : 40|16@1+ (0.01,0) [-100|100] "%"  Logger
+
+BO_ 785 MS6_TC_PP: 8 MS6
+ SG_ tc_fpp_gear : 0|8@1+ (0.02,0) [0|5] ""  Logger
+ SG_ tc_fpp_r : 8|8@1+ (0.01,0) [0|2] ""  Logger
+ SG_ tc_fpp_speed : 16|8@1+ (0.02,0) [0|5] ""  Logger
+ SG_ mi_tc_pp : 24|8@1+ (1,0) [-100|100] "%"  Logger
+ SG_ B_ignoff_tc : 39|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_injoff_tc : 38|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_tcen : 37|1@1+ (1,0) [0|1] ""  Logger
+ SG_ B_tc : 36|1@1+ (1,0) [0|1] ""  Logger
+ SG_ mi_bas : 40|8@1+ (0.5,0) [0|100] "%"  Logger
+ SG_ mi_act : 48|8@1+ (0.5,0) [0|100] "%"  Logger
+
+BO_ 768 MS6_Wheelspeed: 8 MS6
+ SG_ vwheel_fl : 0|16@1+ (0.01,0) [0|400] "km/h"  Logger
+ SG_ vwheel_fr : 16|16@1+ (0.01,0) [0|400] "km/h"  Logger
+ SG_ vwheel_rl : 32|16@1+ (0.01,0) [0|400] "km/h"  Logger
+ SG_ vwheel_rr : 48|16@1+ (0.01,0) [0|400] "km/h"  Logger
+
+BO_ 64 SW_Clutch: 3 SW
+ SG_ ClutchPercentRight_SW : 8|8@1+ (0.3922,0) [0|100] "%"  Logger,TCU
+ SG_ ClutchPercentLeft_SW : 0|8@1+ (0.3922,0) [0|100] "%"  Logger,TCU
+ SG_ Err_ClutchRight_SW : 17|1@1+ (1,0) [0|1] ""  TCU
+ SG_ Err_ClutchLeft_SW : 16|1@1+ (1,0) [0|1] ""  TCU
+
+BO_ 1843 SW_State: 5 SW
+ SG_ TCUAck_SW : 32|1@1+ (1,0) [0|1] ""  Logger
+ SG_ Alive_SW : 16|8@1+ (1,0) [0|255] ""  Logger
+ SG_ CoreTemp_SW : 8|8@1- (1,0) [0|0] ""  Logger
+ SG_ Error_SW : 0|8@1+ (1,0) [0|0] ""  Logger
+
+BO_ 48 SW_Shifting: 1 SW
+ SG_ PB_Neutral_SW : 2|1@1+ (1,0) [0|1] ""  Logger,TCU
+ SG_ ShiftPaddleUp_SW : 1|1@1+ (1,0) [0|1] ""  Logger,TCU
+ SG_ ShiftPaddleDown_SW : 0|1@1+ (1,0) [0|1] ""  Logger,TCU
+
+BO_ 1105 TCU_Shifting_SF: 5 TCU
+ SG_ SF_AutoUpShiftRPM_TCU : 32|8@1+ (1,0) [0|0] ""  Logger
+ SG_ SF_StatusLC : 16|4@1+ (1,0) [0|15] ""  Logger
+ SG_ SF_ManShiftState_TCU : 11|3@1+ (1,0) [0|7] ""  Logger
+ SG_ SF_DelayDriver_TCU : 24|8@1+ (1,0) [0|255] "ms"  Logger
+ SG_ SF_CalcGearAct_TCU : 22|1@1+ (1,0) [0|0] ""  Logger
+ SG_ SF_CalcGear_TCU : 8|3@1+ (1,0) [0|6] ""  Logger
+ SG_ SF_AutoThreadRun_TCU : 21|1@1+ (1,0) [0|1] ""  Logger
+ SG_ SF_AutoState_TCU : 3|5@1+ (1,0) [0|31] ""  Logger
+ SG_ SF_AutoErrState_TCU : 0|3@1+ (1,0) [0|7] ""  Logger
+ SG_ SF_AutoActive_TCU : 20|1@1+ (1,0) [0|1] ""  Logger
+ SG_ SF_AntiStallAct_TCU : 23|1@1+ (1,0) [0|1] ""  Logger
+
+BO_ 1106 TCU_Clutch: 8 TCU
+ SG_ DutyCycleClutch_TCU : 32|8@1+ (0.07843,0) [0|19.99965] "%"  Logger
+ SG_ AccClutch_TCU : 2|2@1+ (1,0) [0|3] ""  Logger
+ SG_ ClutchVlv_TCU : 1|1@1+ (1,0) [0|1] ""  Logger
+ SG_ ClutchSerLimMin_TCU : 24|8@1+ (1,0) [0|255] ""  Logger
+ SG_ ClutchSerLimMax_TCU : 16|8@1+ (1,0) [0|255] ""  Logger
+ SG_ ClutchErr_TCU : 0|1@1+ (1,0) [0|0] ""  Logger
+ SG_ ClutchPos_TCU : 8|8@1+ (1,0) [0|0] ""  Logger
+
+BO_ 1104 TCU_Shifting: 2 TCU
+ SG_ DrivingMode_TCU : 8|3@1+ (1,0) [0|7] ""  Logger
+ SG_ CrtGear_TCU : 4|3@1+ (1,0) [0|6] ""  Logger
+ SG_ ShiftUpCH_TCU : 3|1@1+ (1,0) [0|1] ""  Logger
+ SG_ ShiftUp_TCU : 2|1@1+ (1,0) [0|1] ""  Logger
+ SG_ ShiftDownCH_TCU : 1|1@1+ (1,0) [0|1] ""  Logger
+ SG_ ShiftDown_TCU : 0|1@1+ (1,0) [0|1] ""  Logger
+
+BO_ 1813 PDU_Cooling: 7 PDU
+ SG_ Co_CoolingFan2PowerDutyCycle_PDU : 48|8@1+ (1,0) [0|100] "%"  Logger
+ SG_ Co_MonoFanPWMDutyCycle_PDU : 40|8@1+ (1,0) [0|100] "%"  Logger
+ SG_ Co_MonoFanPowerDutyCycle_PDU : 32|8@1+ (1,0) [0|100] "%"  Logger
+ SG_ Co_CoolingFanPWMDutyCycle_PDU : 8|8@1+ (1,0) [0|100] "%"  Logger
+ SG_ Co_WaterpumpPWMDutyCycle_PDU : 24|8@1+ (1,0) [0|100] "%"  Logger
+ SG_ Co_WaterpumpPowerDutyCycle_PDU : 16|8@1+ (1,0) [0|100] "%"  Logger
+ SG_ Co_CoolingFanPowerDutyCycle_PDU : 0|8@1+ (1,0) [0|100] "%"  Logger
 
 
 
 CM_ BO_ 3221225472 "This is a message for not used signals, created by Vector CANdb++ DBC OLE DB Provider.";
-BA_DEF_  "BusType" STRING ;
-BA_DEF_ SG_  "GenSigSendType" ENUM  "Cyclic","OnWrite","OnWriteWithRepetition","OnChange","OnChangeWithRepetition","IfActive","IfActiveWithRepetition","NoSigSendType";
+CM_ SG_ 257 speed "car speed";
+CM_ SG_ 257 B_erract_tmot "condition error detect for tmot1, not debounced";
+CM_ SG_ 257 B_erract_pbrake_r "condition error detect for pbrake_r, not debounced";
+CM_ SG_ 257 B_erract_pbrake_f "condition error detect for pbrake_f, not debounced";
+CM_ SG_ 256 nmot "engine speed";
+CM_ SG_ 256 gear "selected gear";
+CM_ SG_ 256 tmot "engine temperature";
+CM_ SG_ 256 pbrake_f "brake pressure front ";
+CM_ SG_ 256 pbrake_r "brake pressure rear";
+CM_ SG_ 787 tint "intake air temperature";
+CM_ SG_ 787 p22 "intake manifold pressure downstream throttle";
+CM_ SG_ 787 pamb "ambient pressure";
+CM_ SG_ 787 rl "relative load";
+CM_ SG_ 787 B_stend "condition end of start ";
+CM_ SG_ 787 B_fco "condition fuel cut-off";
+CM_ SG_ 787 B_st "condition start";
+CM_ SG_ 800 tdwell "dwell time";
+CM_ SG_ 800 E_psdia_ign01 "error state power stage diag. for ignition 1";
+CM_ SG_ 800 E_crank "error state crankshaft sensor";
+CM_ SG_ 800 E_cam "error state camshaft sensor; camshaft 1";
+CM_ SG_ 800 B_ignoff_launch "condition ignition cut-off due to launch control";
+CM_ SG_ 800 B_ignoff_gc "condition ignition cut-off due to gearcut function";
+CM_ SG_ 800 B_ign_all "condition all ignitions active";
+CM_ SG_ 800 B_ign_angleprio "condition ignition output angle priority range";
+CM_ SG_ 800 B_fco_en_st "condition fuel cut-off enabled after end of start";
+CM_ SG_ 800 B_fco_en "condition fuel cut-off enabled";
+CM_ SG_ 800 B_trq_ign "condition output nominal ignition angle from torque intervention";
+CM_ SG_ 800 B_trq_gbctrl "condition gearcut with torque intervention active";
+CM_ SG_ 800 B_igntest_en "condition ignition testing output enabled";
+CM_ SG_ 800 B_ignoff_trq "condition ignition cut-off due to torque intervention";
+CM_ SG_ 800 B_igninj_enable "Condition global enabling of ignition and injection";
+CM_ SG_ 800 B_ignadv "condition ignition advance";
+CM_ SG_ 800 B_igninj_enable_cam "Condition local enabling of ignition and injection";
+CM_ SG_ 800 B_ignoff_fco "condition ignition cut-off due to fuel cutoff";
+CM_ SG_ 800 B_ignoff_pit "condition ignition cut-off due to pitspeed limitation";
+CM_ SG_ 800 B_ignoff_nmax "condition ignition cut-off due to engine speed limitation";
+CM_ SG_ 800 ssyncstate "synchronisation mode";
+CM_ SG_ 800 syncstate "synchronisation state";
+CM_ SG_ 788 f_injstart "factor injection precontrol for start";
+CM_ SG_ 788 f_injpc "factor injection precontrol";
+CM_ SG_ 788 f_injwarmup "factor injection precontrol for warm-up";
+CM_ SG_ 788 f_injcutin "factor injection precontrol for fuel cut-in";
+CM_ SG_ 788 f_injpstart "factor injection precontrol for post startfactor injection precontrol for post start";
+CM_ SG_ 802 lamnom "Lambda nominal value";
+CM_ SG_ 802 texh "exhaust gas temperature";
+CM_ SG_ 802 lamctrl_i "Lambda control, I-coefficient";
+CM_ SG_ 802 lamctrl_p "Lambda control, P-coefficient";
+CM_ SG_ 802 flc_i "factor Lambda control, I-portion";
+CM_ SG_ 802 flc_p "factor Lambda control, P-portion";
+CM_ SG_ 802 lamdiff "system deviation of Lambda control";
+CM_ SG_ 517 te "effective injection time";
+CM_ SG_ 517 ign_start "start ignition angle";
+CM_ SG_ 517 ign_out "output ignition angle";
+CM_ SG_ 517 nidle "idle speed";
+CM_ SG_ 517 B_idle "condition idle";
+CM_ SG_ 517 B_idlectrl "condition idle control on";
+CM_ SG_ 517 B_stend "condition end of start ";
+CM_ SG_ 518 etc_dp "d-portion for throttle control";
+CM_ SG_ 518 etc_ip "i-portion for throttle control";
+CM_ SG_ 518 etc_pp "p-portion for throttle control";
+CM_ SG_ 518 etc_pwm "duty cycle for throttle control";
+CM_ SG_ 776 dslip "difference between nominal and actual traction slip";
+CM_ SG_ 776 fslip_driv "factor for nominal traction slip depending on throttle position (TC)";
+CM_ SG_ 776 fslip_acc "correction of nominal traction slip depending on transversal acceleration (TC)";
+CM_ SG_ 776 slip_max "maximum permitted traction slip (TC)";
+CM_ SG_ 776 slip_hand "nominal traction slip influenced by handling state (TC)";
+CM_ SG_ 776 slip_nom "nominal traction slip (TC)";
+CM_ SG_ 777 slip_rl "actual traction slip rear left";
+CM_ SG_ 777 slip_rr "actual traction slip rear right";
+CM_ SG_ 777 slip_act "actual traction slip (TC)";
+CM_ SG_ 777 mi_tc "indicated desired torque from traction control";
+CM_ SG_ 786 tc_dp_fac "factor D-part TC speed dependant";
+CM_ SG_ 786 mi_tc_dp_r "indicated torque of D-portion during TC, raw value";
+CM_ SG_ 786 mi_tc_dp "indicated torque of D-portion during TC";
+CM_ SG_ 786 tc_fdp_r "TC: weighting factor D-part ";
+CM_ SG_ 769 fpump_pwm "PWM output for fuel pump  low-pressure control";
+CM_ SG_ 769 pfuel "fuel pressure";
+CM_ SG_ 769 tfuel "fuel temperature";
+CM_ SG_ 769 pfuel_ip "I-portion for low pressure fuel pump controller";
+CM_ SG_ 769 pfuel_pp "P-portion for low pressure fuel pump controller";
+CM_ SG_ 770 ath "throttle position";
+CM_ SG_ 770 ath_b "throttle position of b signal";
+CM_ SG_ 770 aps "acceleration pedal sensor position";
+CM_ SG_ 770 B_err_apscal "condition error of acceleration pedal calibration";
+CM_ SG_ 770 B_err_aps_pbrake "condition error of acceleration pedal plausibility check with brake pressure";
+CM_ SG_ 770 B_err_etcdiffneg "Error; athnom is less than ath";
+CM_ SG_ 770 B_err_thrpot "condition error of throttle position signal,min,max,plausibility";
+CM_ SG_ 770 B_err_apssig "condition error of acceleration pedal signal,min,max,plausibility";
+CM_ SG_ 771 uaps_a "voltage APS potentiometer a";
+CM_ SG_ 771 uaps_b "voltage APS potentiometer b";
+CM_ SG_ 771 uthrottle "voltage throttle potentiometer";
+CM_ SG_ 771 uthrottle_b "voltage backup throttle potentiometer";
+CM_ SG_ 1072 uthr_P2 "voltage throttle potentiometer at position 2";
+CM_ SG_ 1072 uthr_P1 "voltage throttle potentiometer at position 1";
+CM_ BO_ 1576 "Based on Dash_Switches.dbc by Bosch Motorsport";
+CM_ SG_ 1576 B_WetSw_can_TCU "MS6 Wet Switch";
+CM_ SG_ 1576 B_LaunchSw_can_TCU "MS6 Launch Control State -> Pressed, Released";
+CM_ BO_ 1568 "Based on Dash_Switches.dbc by Bosch Motorsport";
+CM_ SG_ 1568 TCSw_SW "MS6 Traction Control Switch";
+CM_ SG_ 1568 FuncSw_can_SW "MS6 Function Switch";
+CM_ SG_ 1568 MapSw_can_SW "MS6 Map Switch";
+CM_ SG_ 772 E_aps "error state acceleration pedal sensor APS";
+CM_ SG_ 772 E_thr "error state throttle position potentiometer";
+CM_ SG_ 772 E_pbrake_f "error state brake pressure front";
+CM_ SG_ 772 E_pbrake_r "error state brake pressure rear";
+CM_ SG_ 772 E_etccal "error state ETC automatic calibration";
+CM_ SG_ 772 E_etcdiff "error state deviation of  throttle control";
+CM_ SG_ 772 E_psdia_etc "error state power stage diag. for throttle control";
+CM_ SG_ 772 E_ub "error state battery voltage";
+CM_ SG_ 806 gear_gc_msh "selected gear at begin of gearcut,mechanical shift";
+CM_ SG_ 806 cutoff_gc "cut-off pattern due to gearcut";
+CM_ SG_ 806 cutoff_act "actual cut-off pattern";
+CM_ SG_ 806 E_gearpoti "error state gear poti";
+CM_ SG_ 806 E_gsh_msh "error state gearshift gearcut MSD,mechanical shift";
+CM_ SG_ 806 B_engrun "condition engine run at least once";
+CM_ SG_ 806 B_engon "condition engine-on";
+CM_ SG_ 806 B_nmot "condition engine speed: n > NMIN";
+CM_ SG_ 806 B_gearp "condition gear from gear poti detected";
+CM_ SG_ 805 ugs "ADC input voltage gearshift sensor";
+CM_ SG_ 805 f_injgc_msh "factor injection from gearcut,mechanical shift";
+CM_ SG_ 805 ign_gc_msh "ignition angle from gearcut function,mechanical shift";
+CM_ SG_ 805 tgc_phs4_msh "running time of gearcut phase 4,mechanical shift";
+CM_ SG_ 805 B_cutoff_gc_msh "condition release cylinder cut-off,mechanical shift";
+CM_ SG_ 805 B_shdn_msh "condition shift down,mechanical shift";
+CM_ SG_ 805 B_gsshup_msh "condition gearshift sensor,shift up,mechanical shift";
+CM_ SG_ 805 B_gsshdn_msh "condition gearshift sensor,shift down,mechanical shift";
+CM_ SG_ 805 B_gc_fin_msh "condition gearcut finalized,mechanical shift";
+CM_ SG_ 805 B_gc "condition gearcut active";
+CM_ SG_ 805 B_gc_run_msh "condition gearcut state machine running,mechanical shift";
+CM_ SG_ 805 B_gc_msh "condition gearcut active,mechanical shift";
+CM_ SG_ 258 poil "oil pressure";
+CM_ SG_ 258 toil "oil temperature";
+CM_ SG_ 258 mappos "position of map switch";
+CM_ SG_ 258 ub "battery voltage";
+CM_ SG_ 258 B_launch "condition launch control active";
+CM_ SG_ 258 B_wetsw "condition wet switch active";
+CM_ SG_ 258 funcpos "position of function switch";
+CM_ SG_ 773 etc_dp "d-portion for throttle control";
+CM_ SG_ 773 etc_ip "i-portion for throttle control";
+CM_ SG_ 773 etc_pp "p-portion for throttle control";
+CM_ SG_ 773 etc_pwm "duty cycle for throttle control";
+CM_ SG_ 774 athdiff "deviation throttle control";
+CM_ SG_ 774 athnom_aps "nominal position for throttle control acceleration pedal sensor";
+CM_ SG_ 774 athtrqdec "torque decrease by throttle position";
+CM_ SG_ 774 dmi_etc "torque reduction via throttle";
+CM_ SG_ 775 athnom "nominal position for throttle control";
+CM_ SG_ 775 B_idlectrl "condition idle control on";
+CM_ SG_ 775 B_idle "condition idle";
+CM_ SG_ 775 B_etc1_diagdis "condition etc 1 diagnose forbidden";
+CM_ SG_ 775 B_etccal_active "ETC calibration active";
+CM_ SG_ 775 B_etc_pwrstag_dis "condition etc powerstage switched off";
+CM_ SG_ 775 B_igninj_disable_etc "condition no ignition and injection due to etc issues";
+CM_ SG_ 775 B_igninj_dis_etc "condition no ignition and injection due to etc issues,raw value";
+CM_ SG_ 775 etc_cal_case "actual case of throttle calibration";
+CM_ SG_ 775 etccal_pwm "PWM signal from ETC calibration";
+CM_ SG_ 775 dath "delta throttle position";
+CM_ SG_ 789 rfm_trans_lt "long term of transient control";
+CM_ SG_ 789 rfm_trans_thr "throttle portion of transient control";
+CM_ SG_ 789 B_transcomp "condition transient compensation active";
+CM_ SG_ 789 B_transcomp_en "enable condition for transient control";
+CM_ SG_ 789 B_trans_dec "condition transient compensation deceleration enleanment ";
+CM_ SG_ 789 B_trans_acc "condition transient compensation acceleration enrichment ";
+CM_ SG_ 789 rfm "relative fuel mass";
+CM_ SG_ 789 E_pamb "error state ambient pressure";
+CM_ SG_ 790 E_tfuel "error state fuel temperature";
+CM_ SG_ 790 flc "factor Lambda control";
+CM_ SG_ 790 f_inj_gbc "factor injection from gearbox control";
+CM_ SG_ 790 frfmte "factor for calculation relative fuel mass to injection time";
+CM_ SG_ 790 ugearp "ADC input voltage gear poti";
+CM_ SG_ 791 pfuelabs "absolute fuel pressure";
+CM_ SG_ 791 fprailcor "factor fuel pressure correction for injection time calculation";
+CM_ SG_ 791 p22_eff "effective intake manifold pressure";
+CM_ SG_ 791 tinj "actual injection time per active cylinder";
+CM_ SG_ 791 E_tint "error state intake air temperature";
+CM_ SG_ 792 aoinj "angle for begin/end of injection";
+CM_ SG_ 792 tdtevlv "Injection valve delay time";
+CM_ SG_ 792 aoinj_out "angle for begin/end of injection,corrected by valve opening delay";
+CM_ SG_ 792 E_psdia_lpinj01 "error state power stage diag. for injection valve 1";
+CM_ SG_ 792 E_pfuel "error state fuel pressure";
+CM_ SG_ 792 E_p22 "error state pressure sensor p22";
+CM_ SG_ 807 mi_launch "indicated desired torque from launch control";
+CM_ SG_ 807 E_speed "error state car speed signal";
+CM_ SG_ 807 B_wetsw "condition wet switch active";
+CM_ SG_ 807 B_injoff_launch "condition injection cut-off due to launch control";
+CM_ SG_ 807 dnlaunch "difference between target and actual engine speed at launch control";
+CM_ SG_ 807 speed_front "vehicle speed front axle";
+CM_ SG_ 784 tc_fip "gain factor (I-portion) for PI controller of TC";
+CM_ SG_ 784 mi_tc_ip "indicated torque of I-portion during TC";
+CM_ SG_ 784 ftcip_mix "Mix factor traction control I part";
+CM_ SG_ 784 mi_tc_ip_red "indicated torque of I-portion reduced by mix factor during TC";
+CM_ SG_ 785 tc_fpp_gear "gain factor (p-portion) for PI controller of TC, gear dependent";
+CM_ SG_ 785 tc_fpp_r "gain factor (p-portion) for PI controller of TC, raw value";
+CM_ SG_ 785 tc_fpp_speed "gain factor (p-portion) for PID controller of TC,speed dependent";
+CM_ SG_ 785 mi_tc_pp "indicated torque of p-portion during TC";
+CM_ SG_ 785 B_ignoff_tc "condition ignition cut-off due to traction control";
+CM_ SG_ 785 B_injoff_tc "condition injection cut-off due to traction control";
+CM_ SG_ 785 B_tcen "condition TC enable (traction control)";
+CM_ SG_ 785 B_tc "condition traction control active";
+CM_ SG_ 785 mi_bas "indicated torque w/o torque intervention";
+CM_ SG_ 785 mi_act "actual indicated torque";
+CM_ SG_ 768 vwheel_fl "wheel speed front left";
+CM_ SG_ 768 vwheel_fr "wheel speed front right";
+CM_ SG_ 768 vwheel_rl "wheel speed rear left";
+CM_ SG_ 768 vwheel_rr "wheel speed rear right";
+BA_DEF_ SG_  "Signal_Name_German" STRING ;
+BA_DEF_ SG_  "Signal_Name_English" STRING ;
+BA_DEF_ SG_  "GenSigCycleTime" INT 0 0;
 BA_DEF_ SG_  "GenSigInactiveValue" INT 0 0;
-BA_DEF_ BO_  "GenMsgSendType" ENUM  "Cyclic","not_used","not_used","not_used","not_used","Cyclic","not_used","IfActive","NoMsgSendType";
-BA_DEF_ BO_  "GenMsgCycleTime" INT 0 0;
+BA_DEF_ SG_  "GenSigStartValue" FLOAT 0 0;
+BA_DEF_ BO_  "GenMsgStartDelayTime2" INT 0 1000000;
+BA_DEF_ BO_  "GenMsgSendType2" ENUM  "Zyklisch","Ereignisgesteuert","dummy","Auf Anfrage";
+BA_DEF_ BO_  "GenMsgDelayTime2" INT 0 1000000;
+BA_DEF_ BO_  "GenMsgCycleTime2" INT 0 1000000;
+BA_DEF_ BO_  "AddRemark2" STRING ;
+BA_DEF_ BO_  "GenMsgStartDelayTime" INT 0 1000000;
+BA_DEF_ BO_  "AddRemark" STRING ;
+BA_DEF_ BO_  "RequestMessage" ENUM  "no","yes";
+BA_DEF_ BO_  "Message_Longname" STRING ;
+BA_DEF_ BO_  "DiagResponse" ENUM  "no","yes";
+BA_DEF_ BO_  "DiagRequest" ENUM  "no","yes";
+BA_DEF_ BO_  "GenMsgCycleTimeActive" INT 1 100;
+BA_DEF_ BO_  "GenMsgCycleTimeFast" INT 1 50;
+BA_DEF_ BO_  "GenMsgTimeoutTime" INT 0 1000;
+BA_DEF_ BO_  "GenMsgFastOnStart" INT 10 500;
+BA_DEF_ BO_  "GenMsgDelayTime" INT 10 500;
+BA_DEF_ BO_  "GenSigSendType" ENUM  "Cyclic","OnWrite","OnChange";
+BA_DEF_ BO_  "GenMsgSendType" ENUM  "cyclic","spontaneous","adaptive";
+BA_DEF_ BO_  "GenMsgCycleTime" INT 5 1000;
+BA_DEF_ BU_  "MessageManagerUsed" ENUM  "no","yes";
+BA_DEF_ BU_  "DiagnoseStationsAdresse" HEX 0 255;
+BA_DEF_ BU_  "MCV-Nummer" STRING ;
+BA_DEF_ BU_  "ECU_Longname" STRING ;
+BA_DEF_ BU_  "NmNode" INT 0 1;
+BA_DEF_ BU_  "NodeLayerModules" STRING ;
+BA_DEF_ BU_  "CANoeStartDelay" INT 0 0;
+BA_DEF_ BU_  "CANoeJitterMin" INT 0 0;
+BA_DEF_ BU_  "CANoeJitterMax" INT 0 0;
+BA_DEF_ BU_  "CANoeDrift" INT 0 0;
 BA_DEF_ BU_  "NmStationAddress" HEX 0 0;
-BA_DEF_DEF_  "BusType" "";
-BA_DEF_DEF_  "GenSigSendType" "Cyclic";
+BA_DEF_  "Manufacturer" ENUM  "DBAG","VAG","BMWAG";
+BA_DEF_  "BusType" STRING ;
+BA_DEF_REL_ BU_BO_REL_  "GenMsgNrOfRepetition" INT 0 999999;
+BA_DEF_REL_ BU_SG_REL_  "GenSigTimeoutTime" INT 0 0;
+BA_DEF_REL_ BU_SG_REL_  "GenSigTimeoutMsg" INT 0 0;
+BA_DEF_DEF_REL_ "GenMsgNrOfRepetition" 0;
+BA_DEF_DEF_  "Signal_Name_German" "";
+BA_DEF_DEF_  "Signal_Name_English" "";
+BA_DEF_DEF_  "GenSigCycleTime" 0;
 BA_DEF_DEF_  "GenSigInactiveValue" 0;
-BA_DEF_DEF_  "GenMsgSendType" "NoMsgSendType";
-BA_DEF_DEF_  "GenMsgCycleTime" 0;
+BA_DEF_DEF_  "GenSigStartValue" 0;
+BA_DEF_DEF_  "GenMsgStartDelayTime2" 0;
+BA_DEF_DEF_  "GenMsgSendType2" "Zyklisch";
+BA_DEF_DEF_  "GenMsgDelayTime2" 0;
+BA_DEF_DEF_  "GenMsgCycleTime2" 0;
+BA_DEF_DEF_  "AddRemark2" "";
+BA_DEF_DEF_  "GenMsgStartDelayTime" 0;
+BA_DEF_DEF_  "AddRemark" "";
+BA_DEF_DEF_  "RequestMessage" "no";
+BA_DEF_DEF_  "Message_Longname" "";
+BA_DEF_DEF_  "DiagResponse" "no";
+BA_DEF_DEF_  "DiagRequest" "no";
+BA_DEF_DEF_  "GenMsgCycleTimeActive" 10;
+BA_DEF_DEF_  "GenMsgCycleTimeFast" 10;
+BA_DEF_DEF_  "GenMsgTimeoutTime" 0;
+BA_DEF_DEF_  "GenMsgFastOnStart" 10;
+BA_DEF_DEF_  "GenMsgDelayTime" 10;
+BA_DEF_DEF_  "GenSigSendType" "Cyclic";
+BA_DEF_DEF_  "GenMsgSendType" "cyclic";
+BA_DEF_DEF_  "GenMsgCycleTime" 100;
+BA_DEF_DEF_REL_ "GenSigTimeoutTime" 0;
+BA_DEF_DEF_REL_ "GenSigTimeoutMsg" 0;
+BA_DEF_DEF_  "MessageManagerUsed" "yes";
+BA_DEF_DEF_  "DiagnoseStationsAdresse" 0;
+BA_DEF_DEF_  "MCV-Nummer" "";
+BA_DEF_DEF_  "ECU_Longname" "";
+BA_DEF_DEF_  "NmNode" 0;
+BA_DEF_DEF_  "NodeLayerModules" "";
+BA_DEF_DEF_  "CANoeStartDelay" 0;
+BA_DEF_DEF_  "CANoeJitterMin" 0;
+BA_DEF_DEF_  "CANoeJitterMax" 0;
+BA_DEF_DEF_  "CANoeDrift" 0;
 BA_DEF_DEF_  "NmStationAddress" 0;
-BA_ "BusType" "";
-BA_ "GenMsgCycleTime" BO_ 34 50;
-BA_ "GenMsgCycleTime" BO_ 512 50;
-BA_ "GenMsgCycleTime" BO_ 7 50;
-BA_ "GenMsgCycleTime" BO_ 6 50;
-BA_ "GenMsgCycleTime" BO_ 115 50;
-BA_ "GenMsgCycleTime" BO_ 101 50;
-BA_ "GenMsgCycleTime" BO_ 1313 20;
-BA_ "GenMsgCycleTime" BO_ 16 50;
-BA_ "GenMsgCycleTime" BO_ 48 50;
-BA_ "GenMsgCycleTime" BO_ 65 50;
-BA_ "GenMsgCycleTime" BO_ 32 50;
-BA_ "GenMsgCycleTime" BO_ 5 50;
+BA_DEF_DEF_  "Manufacturer" "BMWAG";
+BA_DEF_DEF_  "BusType" "CAN";
+BA_ "GenMsgCycleTime" BO_ 856 50;
+BA_ "GenMsgCycleTime" BO_ 852 50;
+BA_ "GenMsgCycleTime" BO_ 848 50;
+BA_ "GenMsgCycleTime" BO_ 257 10;
+BA_ "GenMsgCycleTime" BO_ 256 10;
+BA_ "GenMsgCycleTime" BO_ 1649 10;
+BA_ "GenMsgCycleTime" BO_ 1648 10;
+BA_ "GenMsgCycleTime" BO_ 787 10;
+BA_ "GenMsgCycleTime" BO_ 788 10;
+BA_ "GenMsgCycleTime" BO_ 802 10;
+BA_ "GenMsgCycleTime" BO_ 517 10;
+BA_ "GenMsgCycleTime" BO_ 776 10;
+BA_ "GenMsgCycleTime" BO_ 777 10;
+BA_ "GenMsgCycleTime" BO_ 786 10;
+BA_ "GenMsgCycleTime" BO_ 769 10;
+BA_ "GenMsgCycleTime" BO_ 1056 10;
+BA_ "GenMsgCycleTime" BO_ 1058 10;
+BA_ "GenMsgCycleTime" BO_ 1057 10;
+BA_ "GenMsgCycleTime" BO_ 1072 500;
+BA_ "GenMsgCycleTime" BO_ 1653 10;
+BA_ "GenMsgCycleTime" BO_ 336 10;
+BA_ "GenMsgCycleTime" BO_ 1568 10;
+BA_ "GenMsgCycleTime" BO_ 593 10;
+BA_ "GenMsgCycleTime" BO_ 592 500;
+BA_ "GenMsgCycleTime" BO_ 1652 10;
+BA_ "GenMsgCycleTime" BO_ 594 500;
+BA_ "GenMsgCycleTime" BO_ 806 10;
+BA_ "GenMsgCycleTime" BO_ 805 10;
+BA_ "GenMsgCycleTime" BO_ 258 10;
+BA_ "GenMsgCycleTime" BO_ 789 10;
+BA_ "GenMsgCycleTime" BO_ 790 10;
+BA_ "GenMsgCycleTime" BO_ 791 10;
+BA_ "GenMsgCycleTime" BO_ 792 10;
+BA_ "GenMsgCycleTime" BO_ 784 10;
+BA_ "GenMsgCycleTime" BO_ 785 10;
+BA_ "GenMsgCycleTime" BO_ 768 10;
+BA_ "GenMsgCycleTime" BO_ 64 10;
+BA_ "GenMsgCycleTime" BO_ 1843 500;
+BA_ "GenMsgCycleTime" BO_ 1105 10;
+BA_ "GenMsgCycleTime" BO_ 1106 10;
+BA_ "GenMsgCycleTime" BO_ 1104 10;
+BA_ "GenSigStartValue" SG_ 256 tmot 80;
+BA_ "GenSigStartValue" SG_ 787 tint 50;
+BA_ "GenSigStartValue" SG_ 788 f_injstart 100;
+BA_ "GenSigStartValue" SG_ 788 f_injpc 100;
+BA_ "GenSigStartValue" SG_ 788 f_injwarmup 100;
+BA_ "GenSigStartValue" SG_ 788 f_injcutin 100;
+BA_ "GenSigStartValue" SG_ 802 lamnom 50;
+BA_ "GenSigStartValue" SG_ 802 lamctrl_i 10;
+BA_ "GenSigStartValue" SG_ 802 lamctrl_p 10;
+BA_ "GenSigStartValue" SG_ 769 tfuel 50;
+BA_ "GenSigStartValue" SG_ 593 Rot_TracCtrPos_SW 1;
+BA_ "GenSigStartValue" SG_ 593 Rot_EventPos_SW 1;
+BA_ "GenSigStartValue" SG_ 593 Rot_ClutchPos_SW 1;
+BA_ "GenSigStartValue" SG_ 1059 ShutOffTime_BSPD 0.256;
+BA_ "GenSigStartValue" SG_ 258 toil 100;
+BA_ "GenSigStartValue" SG_ 790 flc 28;
+BA_ "GenSigStartValue" SG_ 791 fprailcor 200;
+VAL_ 1552 Error_BMS 3 "OVERTEMPERATURE" 2 "OVERCURRENT" 1 "UNDERVOLTAGE" 0 "OK" ;
+VAL_ 1648 YMU_Standstill 1 "car_standing" 0 "car_moving" ;
+VAL_ 800 syncstate 7 "run_full" 6 "full_sync" 4 "crank_sync" 3 "crank_active" 2 "wait_engine" 0 "hold" ;
+VAL_ 1056 EMERGENCY_BSPD 1 "BSPD OK" 0 "Emergancy Open " ;
+VAL_ 258 funcpos 5 "AutoX" 4 "Endurance" 3 "SkidPad" 2 "AccA" 1 "AccM" 0 "Error" ;
 
