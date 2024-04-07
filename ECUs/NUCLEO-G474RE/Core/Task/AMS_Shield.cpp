@@ -45,8 +45,9 @@ class AMS_Shield  {
         //Simulink model
 //        bms.initialize();
 
-        if(chain.performAutoadressing() != Status::COMPLETED);
+        if(chain.performAutoadressing() != Status::COMPLETED){
             Debug::exception();
+        }
     }
 
     void startUp(){
