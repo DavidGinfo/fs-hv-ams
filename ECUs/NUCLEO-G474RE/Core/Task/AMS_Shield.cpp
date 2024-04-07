@@ -43,7 +43,7 @@ class AMS_Shield  {
         chain.getUartCRXPort()->setInterruptHandler(UART::InterruptHandler::bind<&BQ79612::DaisyChain::handleUARTInterrupt>(chain));
 
         //Simulink model
-//        bms.initialize();
+        bms.initialize();
 
         if(chain.performAutoadressing() != Status::COMPLETED){
             Debug::exception();
@@ -69,20 +69,31 @@ class AMS_Shield  {
         if(chain.readCellVoltages(Device::STACK_DEVICE3, &voltages[6], 6) != Status::COMPLETED)
             Debug::exception();
 
-//        BSPD_RAW1::TPS_A_REF_VOLTAGE_BSPD.setPhysicalValue(voltages[0]);
-//        BSPD_RAW1::TPS_A_VOLTAGE_BSPD.setPhysicalValue(voltages[1]);
-//        AMS_CellVoltages1::Voltage_Cell01.setPhysicalValue(0);
-//        AMS_CellVoltages1::Voltage_Cell02.setPhysicalValue(var++);
-//        AMS_CellVoltages1::Voltage_Cell03.setPhysicalValue(var--);
-//        AMS_CellVoltages1::Voltage_Cell04.setPhysicalValue(voltages[3]);
-//        AMS_CellVoltages1::Voltage_Cell05.setPhysicalValue(voltages[4]);
-//        AMS_CellVoltages1::Voltage_Cell06.setPhysicalValue(voltages[5]);
-//        AMS_CellVoltages2::Voltage_Cell07.setPhysicalValue(voltages[6]);
-//        AMS_CellVoltages2::Voltage_Cell08.setPhysicalValue(voltages[7]);
-//        AMS_CellVoltages2::Voltage_Cell09.setPhysicalValue(voltages[8]);
-//        AMS_CellVoltages2::Voltage_Cell10.setPhysicalValue(voltages[9]);
-//        AMS_CellVoltages2::Voltage_Cell11.setPhysicalValue(voltages[10]);
-//        AMS_CellVoltages2::Voltage_Cell12.setPhysicalValue(voltages[11]);
+        AMS_CellVoltages1::Voltage_Cell01.setPhysicalValue(voltages[0]);
+        AMS_CellVoltages1::Voltage_Cell02.setPhysicalValue(voltages[1]);
+        AMS_CellVoltages1::Voltage_Cell03.setPhysicalValue(voltages[2]);
+        AMS_CellVoltages1::Voltage_Cell04.setPhysicalValue(voltages[3]);
+        AMS_CellVoltages2::Voltage_Cell05.setPhysicalValue(voltages[4]);
+        AMS_CellVoltages2::Voltage_Cell06.setPhysicalValue(voltages[5]);
+        AMS_CellVoltages2::Voltage_Cell07.setPhysicalValue(voltages[6]);
+        AMS_CellVoltages2::Voltage_Cell08.setPhysicalValue(voltages[7]);
+        AMS_CellVoltages3::Voltage_Cell09.setPhysicalValue(voltages[8]);
+        AMS_CellVoltages3::Voltage_Cell10.setPhysicalValue(voltages[9]);
+        AMS_CellVoltages3::Voltage_Cell11.setPhysicalValue(voltages[10]);
+        AMS_CellVoltages3::Voltage_Cell12.setPhysicalValue(voltages[11]);
+
+        externalInputs.BMSVoltageInData_c.Voltage1 = voltages[0];
+        externalInputs.BMSVoltageInData_c.Voltage2 = voltages[1];
+        externalInputs.BMSVoltageInData_c.Voltage3 = voltages[2];
+        externalInputs.BMSVoltageInData_c.Voltage4 = voltages[3];
+        externalInputs.BMSVoltageInData_c.Voltage5 = voltages[4];
+        externalInputs.BMSVoltageInData_c.Voltage6 = voltages[5];
+        externalInputs.BMSVoltageInData_c.Voltage7 = voltages[6];
+        externalInputs.BMSVoltageInData_c.Voltage8 = voltages[7];
+        externalInputs.BMSVoltageInData_c.Voltage9 = voltages[8];
+        externalInputs.BMSVoltageInData_c.Voltage10 = voltages[9];
+        externalInputs.BMSVoltageInData_c.Voltage11 = voltages[10];
+        externalInputs.BMSVoltageInData_c.Voltage12 = voltages[11];
     }
 
     void readTemperatures(){
@@ -93,38 +104,48 @@ class AMS_Shield  {
         if(chain.readCellTemperature(Device::STACK_DEVICE3, &temperatures[8], 8) != Status::COMPLETED)
             Debug::exception();
 
-        float tempMin = temperatures[0];
-        float tempMax = temperatures[0];
-        for(float value : temperatures){
-            if(value > 0){
-                if(value < tempMin){
-                    tempMin = value;
-                }
-                if(value > tempMax){
-                    tempMax = value;
-                }
-            }
-        }
+//        float tempMin = temperatures[0];
+//        float tempMax = temperatures[0];
+//        for(float value : temperatures){
+//            if(value > 0){
+//                if(value < tempMin){
+//                    tempMin = value;
+//                }
+//                if(value > tempMax){
+//                    tempMax = value;
+//                }
+//            }
+//        }
 
-//                AMS_Simulink::Min_Temperature.setPhysicalValue(tempMin);
-//                AMS_Simulink::Max_Temperature.setPhysicalValue(tempMax);
+        AMS_CellTemperatures1::Temperature_Cell01.setPhysicalValue(temperatures[0]);
+        AMS_CellTemperatures1::Temperature_Cell02.setPhysicalValue(temperatures[1]);
+        AMS_CellTemperatures1::Temperature_Cell03.setPhysicalValue(temperatures[2]);
+        AMS_CellTemperatures1::Temperature_Cell04.setPhysicalValue(temperatures[3]);
+        AMS_CellTemperatures1::Temperature_Cell05.setPhysicalValue(temperatures[4]);
+        AMS_CellTemperatures1::Temperature_Cell06.setPhysicalValue(temperatures[5]);
+        AMS_CellTemperatures2::Temperature_Cell07.setPhysicalValue(temperatures[8]);
+        AMS_CellTemperatures2::Temperature_Cell08.setPhysicalValue(temperatures[9]);
+        AMS_CellTemperatures2::Temperature_Cell09.setPhysicalValue(temperatures[10]);
+        AMS_CellTemperatures2::Temperature_Cell10.setPhysicalValue(temperatures[11]);
+        AMS_CellTemperatures2::Temperature_Cell11.setPhysicalValue(temperatures[12]);
+        AMS_CellTemperatures2::Temperature_Cell12.setPhysicalValue(temperatures[13]);
+        AMS_CellTemperatures_Extra::Temperature_Cell_Extra1.setPhysicalValue(temperatures[6]);
+        AMS_CellTemperatures_Extra::Temperature_Cell_Extra2.setPhysicalValue(temperatures[7]);
+        AMS_CellTemperatures_Extra::Temperature_Cell_Extra3.setPhysicalValue(temperatures[14]);
+        AMS_CellTemperatures_Extra::Temperature_Cell_Extra4.setPhysicalValue(temperatures[15]);
 
-//        AMS_CellTemperatures1::Temperature_Cell01.setPhysicalValue(temperatures[0]);
-//        AMS_CellTemperatures1::Temperature_Cell02.setPhysicalValue(temperatures[1]);
-//        AMS_CellTemperatures1::Temperature_Cell03.setPhysicalValue(temperatures[2]);
-//        AMS_CellTemperatures1::Temperature_Cell04.setPhysicalValue(temperatures[3]);
-//        AMS_CellTemperatures1::Temperature_Cell05.setPhysicalValue(temperatures[4]);
-//        AMS_CellTemperatures1::Temperature_Cell06.setPhysicalValue(temperatures[5]);
-//        AMS_CellTemperatures2::Temperature_Cell07.setPhysicalValue(temperatures[8]);
-//        AMS_CellTemperatures2::Temperature_Cell08.setPhysicalValue(temperatures[9]);
-//        AMS_CellTemperatures2::Temperature_Cell09.setPhysicalValue(temperatures[10]);
-//        AMS_CellTemperatures2::Temperature_Cell10.setPhysicalValue(temperatures[11]);
-//        AMS_CellTemperatures2::Temperature_Cell11.setPhysicalValue(temperatures[12]);
-//        AMS_CellTemperatures2::Temperature_Cell12.setPhysicalValue(temperatures[13]);
-//        AMS_CellTemperatures_Extra::Temperature_Cell_Extra1.setPhysicalValue(temperatures[6]);
-//        AMS_CellTemperatures_Extra::Temperature_Cell_Extra2.setPhysicalValue(temperatures[7]);
-//        AMS_CellTemperatures_Extra::Temperature_Cell_Extra3.setPhysicalValue(temperatures[14]);
-//        AMS_CellTemperatures_Extra::Temperature_Cell_Extra4.setPhysicalValue(temperatures[15]);
+        externalInputs.BMSTempInData_f.Temp1 = temperatures[0];
+        externalInputs.BMSTempInData_f.Temp2 = temperatures[1];
+        externalInputs.BMSTempInData_f.Temp3 = temperatures[2];
+        externalInputs.BMSTempInData_f.Temp4 = temperatures[3];
+        externalInputs.BMSTempInData_f.Temp5 = temperatures[4];
+        externalInputs.BMSTempInData_f.Temp6 = temperatures[5];
+        externalInputs.BMSTempInData_f.Temp7 = temperatures[6];
+        externalInputs.BMSTempInData_f.Temp8 = temperatures[7];
+        externalInputs.BMSTempInData_f.Temp9 = temperatures[7];
+        externalInputs.BMSTempInData_f.Temp10 = temperatures[9];
+        externalInputs.BMSTempInData_f.Temp11 = temperatures[10];
+        externalInputs.BMSTempInData_f.Temp12 = temperatures[11];
     }
 
     void readDieTemperatures(){
@@ -133,9 +154,9 @@ class AMS_Shield  {
         if(chain.readDieTemperature(temperatures) != Status::COMPLETED)
             Debug::exception();
 
-//        AMS_DieTemperatures::Temperature_Die_BD.setPhysicalValue(temperatures[0]);
-//        AMS_DieTemperatures::Temperature_Die_S1_D1.setPhysicalValue(temperatures[2]);
-//        AMS_DieTemperatures::Temperature_Die_S1_D2.setPhysicalValue(temperatures[3]);
+        AMS_DieTemperatures::Temperature_Die_BD.setPhysicalValue(temperatures[0]);
+        AMS_DieTemperatures::Temperature_Die_S1_D1.setPhysicalValue(temperatures[2]);
+        AMS_DieTemperatures::Temperature_Die_S1_D2.setPhysicalValue(temperatures[3]);
     }
 
     void readFaults(){
@@ -167,6 +188,14 @@ void runAMS_Shield(){
         // Main functionality
         amsShield.readTemperatures();
         amsShield.readVoltages();
+
+
+        externalInputs.BatteryState = BatteryMode::Driving;
+        bms.setExternalInputs(&externalInputs);
+        bms.step();
+        AMS_Simulink::Simulink_BatTemp.setPhysicalValue(bms.getExternalOutputs().BMSActualValues.BatTemp);
+        AMS_Simulink::Simulink_Voltage.setPhysicalValue(bms.getExternalOutputs().BMSActualValues.Voltage);
+
         Parallel::delay(1);
     }
 }
