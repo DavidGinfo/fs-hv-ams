@@ -79,9 +79,9 @@ void UART::handleInterrupt(CallbackType type) {
     auto port = activePort; // Race conditions should be impossible, this is just a precaution
     
     if (port != nullptr) {
-        if (type & (RX_COMPLETE | RX_HALF_COMPLETE)) {
+        if (type & (RX_COMPLETE | RX_HALF_COMPLETE | IDLE)) {
             if (auto crxPort = dynamic_cast<CRXPort *>(port); crxPort != nullptr) {
-                crxPort->handleInput(false);
+                crxPort->handleInput(type == IDLE);
             }
         }
         
