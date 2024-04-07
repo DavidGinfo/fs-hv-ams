@@ -718,8 +718,6 @@ void DaisyChain::wake() {
     Parallel::delay(100);
 }
 void DaisyChain::handleData(uint8_t *data, uint16_t length, bool idle) {
-    if(idle)
-        return;
     for (uint16_t i = 0; i < length; i++) {
         if (nextIndex == receiveBufferSize) {
             nextIndex = 0;
