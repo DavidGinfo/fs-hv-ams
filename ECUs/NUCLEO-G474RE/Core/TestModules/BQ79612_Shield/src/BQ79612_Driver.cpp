@@ -2,6 +2,9 @@
 
 using namespace BQ79612;
 
+extern uint8_t state;
+
+
 const TransactionContent SINGLE_DEVICE_COMMAND_FRAME[] = {
         TransactionContent::TC_INIT,
         TransactionContent::TC_DEV_ADR,
@@ -217,24 +220,35 @@ Status DaisyChain::execute(const TransactionContent command[], uint8_t responseF
     resetData();
 
     writeCommandFrame(command);
-    if (!uartPort.transmitIT(buffer, writeBufferPosition))
+
+    if(uartPort->transmitDMA(buffer, writeBufferPosition))
         return Status::ERROR;
-    if (!binaryNotification.receive(10))
+    if(!binaryNotification.receive(10))
         return Status::ERROR;
+
+//    if (!uartPort.transmitIT(buffer, writeBufferPosition));
+//        return Status::ERROR;
+//    if (!binaryNotification.receive(10));
+//        return Status::ERROR;
+//    state = 0;
 
 //    if(HAL_UART_Transmit(uartHandle, buffer, writeBufferPosition, HOST_UART_TIMEOUT) != HAL_OK){
 //        return Status::ERROR;
 //    }
 
     if(responseFrameCount > 0){
-        if (!uartPort.receiveIT(buffer, receiveBufferSize))
-            return Status::ERROR;
-        if (!binaryNotification.receive(10))
-            return Status::ERROR;
+//        if (!uartPort.receiveIT(buffer, receiveBufferSize));
+//            return Status::ERROR;
+//        if (!binaryNotification.receive(10));
+//            return Status::ERROR;
+//        state = 0;
 
 //        if(HAL_UART_Receive(uartHandle, buffer, receiveBufferSize, HOST_UART_TIMEOUT) != HAL_OK){
 //            return Status::ERROR;
 //        }
+
+        if(!binaryNotification.receive(100))
+            return Status::ERROR;
         readResponseFrames(responseFrameCount);
     }
 
@@ -353,12 +367,12 @@ Status DaisyChain::readRegisters(ReqType readCommandType, Device device, uint16_
     return status;
 }
 
-DaisyChain::DaisyChain(UART::Port &uartPort, Parallel::BinaryChannel &channel, GPIO::Pin uart_tx, GPIO::Pin uart_rx)
+DaisyChain::DaisyChain(UART::CRXPort *uartPort, Parallel::BinaryChannel &channel, GPIO::Pin uart_tx, GPIO::Pin uart_rx)
     : uartPort(uartPort), binaryNotification(channel.createNotification()), UART_TX(uart_tx), UART_RX(uart_rx) {
+    uartPort->setDataHandler(UART::DataHandler::bind<&DaisyChain::handleData>(*this));
 }
 
 void DaisyChain::init(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount) {
-
 
     this->uartHandle = &uartHandle;
     this->timHandle = &timHandle;
@@ -408,13 +422,13 @@ Status DaisyChain::read(ReqType readCommandType, Device device, ReadOnlyRegister
 Status DaisyChain::readDataBuffer(uint8_t *value) {
     return readDataBufferByte(value);
 }
-void DaisyChain::handleInterrupt(UART::CallbackType callbackType) {
-    bool success = callbackType == UART::CallbackType::TX_COMPLETE
-                   || callbackType == UART::CallbackType::TX_HALF_COMPLETE
-                   || callbackType == UART::CallbackType::RX_COMPLETE
-                   || callbackType == UART::CallbackType::RX_HALF_COMPLETE;
 
-    if (success || callbackType == UART::CallbackType::ERROR) {
+
+void DaisyChain::handleUARTInterrupt(UART::CallbackType callbackType) {
+    bool success = callbackType == UART::CallbackType::TX_COMPLETE;
+
+    if (success) {
+        //state = true;
         binaryNotification.sendFromISR();
     }
 }
@@ -702,4 +716,24 @@ void DaisyChain::wake() {
     ping(Ping_us::WAKE);
     // wait min 10ms + 600us per device wake propagation, dont know why have to to this twice
     Parallel::delay(100);
+}
+void DaisyChain::handleData(uint8_t *data, uint16_t length, bool idle) {
+    if(idle)
+        return;
+    for (uint16_t i = 0; i < length; i++) {
+        if (nextIndex == receiveBufferSize) {
+            nextIndex = 0;
+            Debug::warning(); // Buffer overflow
+        }
+
+        buffer[nextIndex++] = data[i];
+        processDataIfComplete();
+    }
+}
+void DaisyChain::processDataIfComplete() {
+    if (nextIndex < receiveBufferSize) return;
+
+    nextIndex = 0;
+
+    binaryNotification.sendFromISR();
 }

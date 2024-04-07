@@ -13,7 +13,7 @@
 #include <parallel/Delay.h>
 #include <parallel/notification/BinaryChannel.h>
 #include <util/Common.h>
-#include <IO/UART/Port.h>
+#include <IO/UART/CRXPort.h>
 
 #include <cmath>
 
@@ -58,9 +58,21 @@ namespace BQ79612 {
 
         void init(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount);
 
-        explicit DaisyChain(UART::Port &uartPort, Parallel::BinaryChannel &channel, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
+        void handleData(uint8_t *data, uint16_t length, bool idle);
 
-        void handleInterrupt(UART::CallbackType callbackType);
+        explicit DaisyChain(UART::CRXPort *uartPort, Parallel::BinaryChannel &channel, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
+
+        void handleUARTInterrupt(UART::CallbackType callbackType);
+
+        UART::CRXPort *getUartCRXPort(){
+            return this->uartPort;
+        }
+
+        uint8_t getReceiveBufferSize(){
+            return this->receiveBufferSize;
+        }
+
+        void processDataIfComplete();
 
         // TODO outsource generic abstraction for hw timer functionality to library
         // TODO implement clean solution for exact delay in us (with rtos and HW timer in combination), commit tim handle via constructor
@@ -101,9 +113,10 @@ namespace BQ79612 {
 //        Status readDieTemperature(float *dieTemperature);
 //
 //        Status getFaultSummary(Device device, FaultSummary *faults);
-
       private:
         inline static volatile bool done = false;
+
+        uint16_t nextIndex = 0;
 
         UART_HandleTypeDef *uartHandle;
         TIM_HandleTypeDef *timHandle;
@@ -112,7 +125,7 @@ namespace BQ79612 {
 
         Parallel::BinaryNotification binaryNotification;
 
-        UART::Port &uartPort;
+        UART::CRXPort *uartPort;
 
         GPIO_InitTypeDef UART_TX_GPIO_InitStruct;
 

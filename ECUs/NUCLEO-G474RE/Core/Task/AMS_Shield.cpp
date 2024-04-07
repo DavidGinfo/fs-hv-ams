@@ -8,7 +8,7 @@
 
 using namespace BQ79612;
 
-extern UART_HandleTypeDef huart4;
+extern UART_HandleTypeDef huart5;
 extern TIM_HandleTypeDef htim16;
 
 [[noreturn]] void runAMS_Shield();
@@ -16,7 +16,7 @@ extern TIM_HandleTypeDef htim16;
 Parallel::NormalTask amsShieldTask(&runAMS_Shield, "AMS-Shield", RTOS::Priority::PriorityNormal);
 Parallel::BinaryChannel channelAMSShield(amsShieldTask);
 
-UART::Port &uartPortAMSShield = UART::Port::create<&huart4>();
+//UART::CRXPort uartPortAMSShield = UART::CRXPort::create<&huart4>("GPS-UART-RX");
 
 GPIO::Pin uart_tx = GPIO::Pin(Host_UART_TX_GPIO_Port, Host_UART_TX_Pin);
 GPIO::Pin uart_rx = GPIO::Pin(Host_UART_RX_GPIO_Port, Host_UART_RX_Pin);
@@ -32,19 +32,20 @@ class AMS_Shield  {
     DaisyChain chain;
 
   public:
-    explicit AMS_Shield() : chain(uartPortAMSShield, channelAMSShield, uart_tx, uart_rx){}
+    explicit AMS_Shield() : chain(&UART::CRXPort::create<&huart5>("AMS-UART-RX"), channelAMSShield, uart_tx, uart_rx){}
 
     void generalStartup(){
-        chain.init(huart4, htim16, DEVICE_COUNT);
-
-        uartPortAMSShield.setInterruptHandler(UART::InterruptHandler::bind<&BQ79612::DaisyChain::handleInterrupt>(chain));
+        chain.init(huart5, htim16, DEVICE_COUNT);
 
         chain.wake();
+
+        chain.getUartCRXPort()->init();
+        chain.getUartCRXPort()->setInterruptHandler(UART::InterruptHandler::bind<&BQ79612::DaisyChain::handleUARTInterrupt>(chain));
 
         //Simulink model
 //        bms.initialize();
 
-        if(chain.performAutoadressing() != Status::COMPLETED)
+        if(chain.performAutoadressing() != Status::COMPLETED);
             Debug::exception();
     }
 
