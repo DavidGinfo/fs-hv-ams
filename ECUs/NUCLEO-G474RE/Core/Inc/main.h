@@ -69,10 +69,10 @@ void Error_Handler(void);
 #define T_SWDIO_GPIO_Port GPIOA
 #define T_SWCLK_Pin GPIO_PIN_14
 #define T_SWCLK_GPIO_Port GPIOA
-#define Host_UART_TX_Pin GPIO_PIN_12
+#define Host_UART_TX_Pin GPIO_PIN_10
 #define Host_UART_TX_GPIO_Port GPIOC
-#define Host_UART_RX_Pin GPIO_PIN_2
-#define Host_UART_RX_GPIO_Port GPIOD
+#define Host_UART_RX_Pin GPIO_PIN_11
+#define Host_UART_RX_GPIO_Port GPIOC
 #define T_SWO_Pin GPIO_PIN_3
 #define T_SWO_GPIO_Port GPIOB
 

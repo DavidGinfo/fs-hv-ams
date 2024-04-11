@@ -15,7 +15,7 @@ namespace CAN {
   inline constexpr uint8_t MAX_RECEIVE_MESSAGES = 16; // Costs 4 bytes per message
   inline constexpr uint8_t RX_QUEUE_LENGTH = 8; // Costs sizeof(BufferContainer) per message
   
-  inline constexpr uint8_t MAX_SEND_MESSAGES = 16; // Costs 4 bytes per message
+  inline constexpr uint8_t MAX_SEND_MESSAGES = 20; // Costs 4 bytes per message
   inline constexpr uint8_t TX_QUEUE_LENGTH = MAX_SEND_MESSAGES / 2; // Costs sizeof(BufferContainer) per message
   inline constexpr uint8_t TX_BUFFER_COUNT = 3; // The amount of transmit mailboxes, should always be 3 for STM32 bxCAN
   inline constexpr uint8_t TX_BUFFER_WAIT_TIME = 1; // Amount of time to wait for the notification before polling again

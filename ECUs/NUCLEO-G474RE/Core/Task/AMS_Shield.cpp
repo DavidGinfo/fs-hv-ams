@@ -8,7 +8,7 @@
 
 using namespace BQ79612;
 
-extern UART_HandleTypeDef huart5;
+extern UART_HandleTypeDef huart4;
 extern TIM_HandleTypeDef htim16;
 
 [[noreturn]] void runAMS_Shield();
@@ -21,21 +21,23 @@ Parallel::BinaryChannel channelAMSShield(amsShieldTask);
 GPIO::Pin uart_tx = GPIO::Pin(Host_UART_TX_GPIO_Port, Host_UART_TX_Pin);
 GPIO::Pin uart_rx = GPIO::Pin(Host_UART_RX_GPIO_Port, Host_UART_RX_Pin);
 
-const uint8_t DEVICE_COUNT = 4;
+const uint8_t DEVICE_COUNT = 3;
 
 // Simulink model code
 ExtU_BMS_T externalInputs;
-ExtY_BMS_T externalOutputs;
 BMS bms = BMS();
 
 class AMS_Shield  {
     DaisyChain chain;
+    uint8_t lostMessagesCount = 0;
 
   public:
-    explicit AMS_Shield() : chain(&UART::CRXPort::create<&huart5>("AMS-UART-RX"), channelAMSShield, uart_tx, uart_rx){}
+    explicit AMS_Shield() : chain(&UART::CRXPort::create<&huart4>("AMS-UART-RX"), channelAMSShield, uart_tx, uart_rx){}
 
     void generalStartup(){
-        chain.init(huart5, htim16, DEVICE_COUNT);
+        bool autoAdressingDone = false;
+
+        chain.init(huart4, htim16, DEVICE_COUNT);
 
         chain.wake();
 
@@ -45,29 +47,33 @@ class AMS_Shield  {
         //Simulink model
         bms.initialize();
 
-        if(chain.performAutoadressing() != Status::COMPLETED){
-            Debug::exception();
-        }
+        do{
+            if(chain.performAutoadressing() == Status::COMPLETED){
+                autoAdressingDone = true;
+            }
+        }while(!autoAdressingDone);
     }
 
     void startUp(){
         uint8_t cfg = static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
 
+        chain.activateVCs(Device::STACK_DEVICE1, Active_Cell::_6S);
         chain.activateVCs(Device::STACK_DEVICE2, Active_Cell::_6S);
-        chain.activateVCs(Device::STACK_DEVICE3, Active_Cell::_6S);
-        Parallel::delay(10);
+        chain.setActivateGPIOADCs(Device::STACK_DEVICE1);
         chain.setActivateGPIOADCs(Device::STACK_DEVICE2);
-        chain.setActivateGPIOADCs(Device::STACK_DEVICE3);
-        Parallel::delay(10);
         chain.activateADCs(cfg);
     }
 
     void readVoltages(){
         float voltages[12] = {};
-        if(chain.readCellVoltages(Device::STACK_DEVICE2, &voltages[0], 6) != Status::COMPLETED)
-            Debug::exception();
-        if(chain.readCellVoltages(Device::STACK_DEVICE3, &voltages[6], 6) != Status::COMPLETED)
-            Debug::exception();
+        if(chain.readCellVoltages(Device::STACK_DEVICE1, &voltages[0], 6) != Status::COMPLETED){
+            lostMessagesCount++;
+            return;
+        }
+        if(chain.readCellVoltages(Device::STACK_DEVICE2, &voltages[6], 6) != Status::COMPLETED){
+            lostMessagesCount++;
+            return;
+        }
 
         AMS_CellVoltages1::Voltage_Cell01.setPhysicalValue(voltages[0]);
         AMS_CellVoltages1::Voltage_Cell02.setPhysicalValue(voltages[1]);
@@ -98,24 +104,14 @@ class AMS_Shield  {
 
     void readTemperatures(){
         float temperatures[16];
-        Parallel::delay(10);
-        if(chain.readCellTemperature(Device::STACK_DEVICE2, &temperatures[0], 8) != Status::COMPLETED)
-            Debug::exception();
-        if(chain.readCellTemperature(Device::STACK_DEVICE3, &temperatures[8], 8) != Status::COMPLETED)
-            Debug::exception();
-
-//        float tempMin = temperatures[0];
-//        float tempMax = temperatures[0];
-//        for(float value : temperatures){
-//            if(value > 0){
-//                if(value < tempMin){
-//                    tempMin = value;
-//                }
-//                if(value > tempMax){
-//                    tempMax = value;
-//                }
-//            }
-//        }
+        if(chain.readCellTemperature(Device::STACK_DEVICE1, &temperatures[0], 8) != Status::COMPLETED){
+            lostMessagesCount++;
+            return;
+        }
+        if(chain.readCellTemperature(Device::STACK_DEVICE2, &temperatures[8], 8) != Status::COMPLETED){
+            lostMessagesCount++;
+            return;
+        }
 
         AMS_CellTemperatures1::Temperature_Cell01.setPhysicalValue(temperatures[0]);
         AMS_CellTemperatures1::Temperature_Cell02.setPhysicalValue(temperatures[1]);
@@ -142,34 +138,45 @@ class AMS_Shield  {
         externalInputs.BMSTempInData_f.Temp6 = temperatures[5];
         externalInputs.BMSTempInData_f.Temp7 = temperatures[6];
         externalInputs.BMSTempInData_f.Temp8 = temperatures[7];
-        externalInputs.BMSTempInData_f.Temp9 = temperatures[7];
+        externalInputs.BMSTempInData_f.Temp9 = temperatures[7]; // TODO: set correct input, unconnected NTC, just for simulink testing
         externalInputs.BMSTempInData_f.Temp10 = temperatures[9];
         externalInputs.BMSTempInData_f.Temp11 = temperatures[10];
         externalInputs.BMSTempInData_f.Temp12 = temperatures[11];
     }
 
-    void readDieTemperatures(){
-        float temperatures[4];
-        Parallel::delay(1);
-        if(chain.readDieTemperature(temperatures) != Status::COMPLETED)
-            Debug::exception();
-
-        AMS_DieTemperatures::Temperature_Die_BD.setPhysicalValue(temperatures[0]);
-        AMS_DieTemperatures::Temperature_Die_S1_D1.setPhysicalValue(temperatures[2]);
-        AMS_DieTemperatures::Temperature_Die_S1_D2.setPhysicalValue(temperatures[3]);
+    void readCurrent(){
+        float temp = IVTS_Current::IVTS_Current.getPhysicalValue();
+        AMS_Current::TS_Current.setPhysicalValue(temp);
     }
 
-    void readFaults(){
-        FaultSummary faults_BD;
-        FaultSummary faults_S1_D1;
-        FaultSummary faults_S1_D2;
+    void readDieTemperatures(){
+        float temperatures[3];
+        if(chain.readDieTemperature(temperatures) != Status::COMPLETED){
+            lostMessagesCount++;
+            return;
+        }
 
-        if(chain.getFaultSummary(Device::BASE_DEVICE, &faults_BD) != Status::COMPLETED)
-            Debug::exception();
-        if(chain.getFaultSummary(Device::STACK_DEVICE2, &faults_S1_D1) != Status::COMPLETED)
-            Debug::exception();
-        if(chain.getFaultSummary(Device::STACK_DEVICE3, &faults_S1_D2) != Status::COMPLETED)
-            Debug::exception();
+        AMS_Diagnosis::Temperature_Die_BD.setPhysicalValue(temperatures[0]);
+        AMS_Diagnosis::Temperature_Die_S1_D1.setPhysicalValue(temperatures[1]);
+        AMS_Diagnosis::Temperature_Die_S1_D2.setPhysicalValue(temperatures[2]);
+    }
+
+    void evaluateSimulinkModel(){
+        externalInputs.BatteryState = BatteryMode::Driving;
+        externalInputs.BMSCurrentInData = IVTS_Current::IVTS_Current.getPhysicalValue();
+        bms.setExternalInputs(&externalInputs);
+        bms.step();
+
+        AMS_Simulink::Simulink_BatTemp.setPhysicalValue(bms.getExternalOutputs().BMSActualValues.BatTemp);
+        AMS_Simulink::Simulink_Voltage.setPhysicalValue(bms.getExternalOutputs().BMSActualValues.Voltage);
+//        AMS_Simulink::Simulink_Voltage.setPhysicalValue(bms.getExternalOutputs().BMSActualValues.BatCurrent);
+//        AMS_Simulink::Simulink_Voltage.setPhysicalValue(bms.getExternalOutputs().BMSActualValues.BatSOC);
+    }
+
+    void performDiagnosis(){
+        this->readDieTemperatures();
+
+        AMS_Diagnosis::Lost_Messages_Counter.setPhysicalValue(lostMessagesCount);
     }
 };
 
@@ -182,19 +189,15 @@ void runAMS_Shield(){
 
     for(;;){
         // Diagnosis functionality
-        amsShield.readDieTemperatures();
-        amsShield.readFaults();
+        amsShield.performDiagnosis();
 
         // Main functionality
         amsShield.readTemperatures();
         amsShield.readVoltages();
+        amsShield.readCurrent();
 
-
-        externalInputs.BatteryState = BatteryMode::Driving;
-        bms.setExternalInputs(&externalInputs);
-        bms.step();
-        AMS_Simulink::Simulink_BatTemp.setPhysicalValue(bms.getExternalOutputs().BMSActualValues.BatTemp);
-        AMS_Simulink::Simulink_Voltage.setPhysicalValue(bms.getExternalOutputs().BMSActualValues.Voltage);
+        //Simulink functionality
+        amsShield.evaluateSimulinkModel();
 
         Parallel::delay(1);
     }

@@ -68,9 +68,9 @@ BO_ 3 AMS_CellVoltages2: 8 AMS_Shield
 BO_ 1313 IVTS_Current: 6 Vector__XXX
  SG_ IVTS_Current : 23|32@0- (0.001,0) [-2147483.648|2147483.647] "A"  AMS_Shield
 
-BO_ 8 AMS_Simulink: 7 AMS_Shield
- SG_ Simulink_BatSOC : 40|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
- SG_ Simulink_BatCurrent : 26|14@1+ (0.01,0) [0|163.83] "A" Vector__XXX
+BO_ 8 AMS_Simulink: 8 AMS_Shield
+ SG_ Simulink_BatSOC : 44|16@1+ (0.001,0) [0|65.535] "V" Vector__XXX
+ SG_ Simulink_BatCurrent : 26|18@1- (0.001,0) [-131.072|131.071] "A" Vector__XXX
  SG_ Simulink_BatTemp : 16|10@1+ (0.1,0) [0|102.3] "°C" Vector__XXX
  SG_ Simulink_Voltage : 0|16@1+ (0.001,0) [0|65.535] "V" Vector__XXX
 
@@ -106,7 +106,8 @@ BO_ 2 AMS_CellVoltages1: 7 AMS_Shield
  SG_ Voltage_Cell02 : 26|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
  SG_ Voltage_Cell01 : 0|13@1+ (0.001,0) [0|8.191] "V" Vector__XXX
 
-BO_ 1 AMS_DieTemperatures: 5 AMS_Shield
+BO_ 1 AMS_Diagnosis: 6 AMS_Shield
+ SG_ Lost_Messages_Counter : 33|8@1+ (1,0) [0|255] "" Vector__XXX
  SG_ Temperature_Die_S1_D2 : 22|11@1+ (0.1,0) [0|204.7] "°C" Vector__XXX
  SG_ Temperature_Die_S1_D1 : 11|11@1+ (0.1,0) [0|204.7] "°C" Vector__XXX
  SG_ Temperature_Die_BD : 0|11@1+ (0.1,0) [0|204.7] "°C" Vector__XXX
