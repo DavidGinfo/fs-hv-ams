@@ -11,8 +11,6 @@
         GPIO::activePin = previousPin;        \
     } while (false)
 
-#define FEATURE_DMA true
-
 #if FEATURE_DMA
 
 #include <IO/DMA/Interrupt.h>
@@ -78,7 +76,7 @@ namespace DMA {
     } while (false)
 
 #endif
-#define FEATURE_UART true
+
 #if FEATURE_UART
 
 #include <IO/UART/Interrupt.h>
