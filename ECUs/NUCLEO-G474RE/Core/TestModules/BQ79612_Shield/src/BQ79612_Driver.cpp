@@ -226,27 +226,7 @@ Status DaisyChain::execute(const TransactionContent command[], uint8_t responseF
     if(!binaryNotification.receive(10))
         return Status::ERROR;
 
-//    if (!uartPort.transmitIT(buffer, writeBufferPosition));
-//        return Status::ERROR;
-//    if (!binaryNotification.receive(10));
-//        return Status::ERROR;
-//    state = 0;
-
-//    if(HAL_UART_Transmit(uartHandle, buffer, writeBufferPosition, HOST_UART_TIMEOUT) != HAL_OK){
-//        return Status::ERROR;
-//    }
-
     if(responseFrameCount > 0){
-//        if (!uartPort.receiveIT(buffer, receiveBufferSize));
-//            return Status::ERROR;
-//        if (!binaryNotification.receive(10));
-//            return Status::ERROR;
-//        state = 0;
-
-//        if(HAL_UART_Receive(uartHandle, buffer, receiveBufferSize, HOST_UART_TIMEOUT) != HAL_OK){
-//            return Status::ERROR;
-//        }
-
         if(!binaryNotification.receive(100))
             return Status::ERROR;
         readResponseFrames(responseFrameCount);
