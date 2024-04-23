@@ -221,14 +221,16 @@ Status DaisyChain::execute(const TransactionContent command[], uint8_t responseF
 
     writeCommandFrame(command);
 
-    if(uartPort->transmitDMA(buffer, writeBufferPosition))
+    if(!uartPort->transmitDMA(buffer, writeBufferPosition))
         return Status::ERROR;
     if(!binaryNotification.receive(10))
         return Status::ERROR;
 
     if(responseFrameCount > 0){
-        if(!binaryNotification.receive(100))
+        if(!binaryNotification.receive(10)){
+            resetData();
             return Status::ERROR;
+        }
         readResponseFrames(responseFrameCount);
     }
 
