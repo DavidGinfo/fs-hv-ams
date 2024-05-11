@@ -1,6 +1,6 @@
 #include <IO/CAN/Config.h>
 
 namespace CAN {
-    Peripheral *BUS_1_PERIPHERAL = &peripheral1;
+    Peripheral *BUS_3_PERIPHERAL = &peripheral1;
 
 }
