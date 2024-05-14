@@ -24,9 +24,10 @@ namespace BQ79612 {
     const uint8_t MAX_DATA_SIZE_RESPONSE_FRAME = 128;
     const uint8_t MAX_LENGTH_TRANSACTION_FRAME = MAX_DATA_SIZE_RESPONSE_FRAME + TRANSACTION_FRAME_OVERHEAD;
     const uint8_t MAX_DEVICE_COUNT = 64;
+    const uint8_t HV_ACCU_DEVICE_COUNT = 12;
     const uint8_t TEST_DEVICE_COUNT = 3;
-    const uint8_t BUFFER_SIZE = static_cast<uint8_t>(TEST_DEVICE_COUNT * MAX_LENGTH_TRANSACTION_FRAME);
-    const uint8_t DATA_BUFFER_SIZE = static_cast<uint8_t>(TEST_DEVICE_COUNT * MAX_DATA_SIZE_RESPONSE_FRAME);
+    const uint8_t BUFFER_SIZE = static_cast<uint8_t>(HV_ACCU_DEVICE_COUNT * MAX_LENGTH_TRANSACTION_FRAME);
+    const uint8_t DATA_BUFFER_SIZE = static_cast<uint8_t>(HV_ACCU_DEVICE_COUNT * MAX_DATA_SIZE_RESPONSE_FRAME);
     inline constexpr Parallel::TimeMS HOST_UART_TIMEOUT = 100;
 
     const float CELCIUS_KELVIN_OFFSET = 273.15;
@@ -94,9 +95,13 @@ namespace BQ79612 {
         Status performAutoadressing();
         Status activateADCs(uint8_t config);
         Status activateVCs(Device device, Active_Cell activeVCConfig);
+        Status activateVCs(Active_Cell activeVCConfig);
         Status readCellVoltages(Device device, float *cellVoltages, uint8_t cellVoltageCount);
+        Status readCellVoltages(float *cellVoltages, uint8_t cellVoltageCount);
         Status setActivateGPIOADCs(Device device);
+        Status setActivateGPIOADCs();
         Status readCellTemperature(Device device, float *cellTemperatures, uint8_t cellTemperatureCount);
+        Status readCellTemperature(float *cellTemperatures, uint8_t cellTemperatureCount);
         Status readDieTemperature(float *dieTemperature);
         Status getFaultSummary(Device device, FaultSummary *faults);
 
@@ -149,12 +154,12 @@ namespace BQ79612 {
         uint16_t cf_regAdr = 0;
         uint16_t cf_crc    = 0;
 
-        uint8_t rf_init[TEST_DEVICE_COUNT] = {};
-        uint8_t rf_devAdr[TEST_DEVICE_COUNT] = {};
-        uint16_t rf_regAdr[TEST_DEVICE_COUNT] = {};
-        uint16_t rf_crc[TEST_DEVICE_COUNT]    = {};
+        uint8_t rf_init[HV_ACCU_DEVICE_COUNT] = {};
+        uint8_t rf_devAdr[HV_ACCU_DEVICE_COUNT] = {};
+        uint16_t rf_regAdr[HV_ACCU_DEVICE_COUNT] = {};
+        uint16_t rf_crc[HV_ACCU_DEVICE_COUNT]    = {};
 
-        uint16_t rf_crc_calc[TEST_DEVICE_COUNT] = {};
+        uint16_t rf_crc_calc[HV_ACCU_DEVICE_COUNT] = {};
 
         void init_UART_TX_GPIO();
 
