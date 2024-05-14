@@ -19,7 +19,7 @@ Parallel::BinaryChannel channelAMSShield(amsShieldTask);
 GPIO::Pin uart_tx = GPIO::Pin(Host_UART_TX_GPIO_Port, Host_UART_TX_Pin);
 GPIO::Pin uart_rx = GPIO::Pin(Host_UART_RX_GPIO_Port, Host_UART_RX_Pin);
 
-const uint8_t DEVICE_COUNT = 3;
+//const uint8_t DEVICE_COUNT = 3;
 
 // Simulink model code
 ExtU_BMS_T externalInputs;
@@ -35,7 +35,7 @@ class AMS_Shield  {
     void generalStartup(){
         bool autoAdressingDone = false;
 
-        chain.init(huart4, htim16, DEVICE_COUNT);
+        chain.init(huart4, htim16);
 
         chain.wake();
 
@@ -55,32 +55,25 @@ class AMS_Shield  {
     void startUp(){
         uint8_t cfg = static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
 
-        chain.activateVCs(Device::STACK_DEVICE1, Active_Cell::_6S);
-        chain.activateVCs(Device::STACK_DEVICE2, Active_Cell::_6S);
-        chain.setActivateGPIOADCs(Device::STACK_DEVICE1);
-        chain.setActivateGPIOADCs(Device::STACK_DEVICE2);
+        chain.activateVCs(Active_Cell::_6S);
+
+        chain.setActivateGPIOADCs();
         chain.activateADCs(cfg);
     }
 
     void readVoltages(){
-        float voltages[6*(DEVICE_COUNT-1)] = {};
-        if(chain.readCellVoltages(Device::STACK_DEVICE1, &voltages[0], 6) != Status::COMPLETED){
-            lostMessagesCount++;
-            return;
-        }
-        if(chain.readCellVoltages(Device::STACK_DEVICE2, &voltages[6], 6) != Status::COMPLETED){
+        float voltages[6*(HV_ACCU_DEVICE_COUNT-1)] = {};
+
+        if(chain.readCellVoltages(voltages, 6) != Status::COMPLETED){
             lostMessagesCount++;
             return;
         }
     }
 
     void readTemperatures(){
-        float temperatures[8*(DEVICE_COUNT-1)];
-        if(chain.readCellTemperature(Device::STACK_DEVICE1, &temperatures[0], 8) != Status::COMPLETED){
-            lostMessagesCount++;
-            return;
-        }
-        if(chain.readCellTemperature(Device::STACK_DEVICE2, &temperatures[8], 8) != Status::COMPLETED){
+        float temperatures[8*(HV_ACCU_DEVICE_COUNT-1)];
+
+        if(chain.readCellTemperature(temperatures, 8)){
             lostMessagesCount++;
             return;
         }
@@ -92,7 +85,7 @@ class AMS_Shield  {
     }
 
     void readDieTemperatures(){
-        float temperatures[3];
+        float temperatures[HV_ACCU_DEVICE_COUNT];
         if(chain.readDieTemperature(temperatures) != Status::COMPLETED){
             lostMessagesCount++;
             return;

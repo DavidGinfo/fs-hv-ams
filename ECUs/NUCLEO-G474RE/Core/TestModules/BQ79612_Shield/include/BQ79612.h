@@ -24,7 +24,7 @@ namespace BQ79612 {
     const uint8_t MAX_DATA_SIZE_RESPONSE_FRAME = 128;
     const uint8_t MAX_LENGTH_TRANSACTION_FRAME = MAX_DATA_SIZE_RESPONSE_FRAME + TRANSACTION_FRAME_OVERHEAD;
     const uint8_t MAX_DEVICE_COUNT = 64;
-    const uint8_t HV_ACCU_DEVICE_COUNT = 12;
+    const uint8_t HV_ACCU_DEVICE_COUNT = 5;
     const uint8_t TEST_DEVICE_COUNT = 3;
     const uint8_t BUFFER_SIZE = static_cast<uint8_t>(HV_ACCU_DEVICE_COUNT * MAX_LENGTH_TRANSACTION_FRAME);
     const uint8_t DATA_BUFFER_SIZE = static_cast<uint8_t>(HV_ACCU_DEVICE_COUNT * MAX_DATA_SIZE_RESPONSE_FRAME);
@@ -57,7 +57,7 @@ namespace BQ79612 {
 
         //DaisyChain(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount, GPIO::Pin uart_tx, GPIO::Pin uart_rx);
 
-        void init(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount);
+        void init(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle);
 
         void handleData(uint8_t *data, uint16_t length, bool idle);
 

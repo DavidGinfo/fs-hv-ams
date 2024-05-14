@@ -354,11 +354,11 @@ DaisyChain::DaisyChain(UART::CRXPort *uartPort, Parallel::BinaryChannel &channel
     uartPort->setDataHandler(UART::DataHandler::bind<&DaisyChain::handleData>(*this));
 }
 
-void DaisyChain::init(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle, uint8_t deviceCount) {
+void DaisyChain::init(UART_HandleTypeDef &uartHandle, TIM_HandleTypeDef &timHandle) {
 
     this->uartHandle = &uartHandle;
     this->timHandle = &timHandle;
-    this->deviceCount = deviceCount;
+    this->deviceCount = HV_ACCU_DEVICE_COUNT;
 
     init_UART_TX_GPIO();
 }
@@ -536,14 +536,6 @@ Status DaisyChain::readCellVoltages(Device device, float *cellVoltages, uint8_t 
  * @return
  */
 Status DaisyChain::readCellVoltages(float *cellVoltages, uint8_t cellVoltageCount) {
-    // configure main adc in continous run mode and start adc for every stack device
-    uint8_t sendDataRCV = static_cast<uint8_t>(ADC_Ctrl1::MAIN_MODE_CONTINOUS_RUN) | static_cast<uint8_t>(ADC_Ctrl1::MAIN_GO);
-    if(write(ReqType::STACK_WRITE, Device::MULTIPLE_DEVICES, ReadWriteRegister::ADC_CTRL1, &sendDataRCV, 1) != Status::COMPLETED)
-        return Status::ERROR;
-
-    // TODO implement exact delay in us
-    Parallel::delay(15);
-
     // read cell voltages from BQ
     if(read(ReqType::STACK_READ, Device::MULTIPLE_DEVICES,  static_cast<ReadOnlyRegister>(static_cast<uint16_t>(ReadOnlyRegister::VCELL1_LO) - (cellVoltageCount * 2 - 1)), cellVoltageCount * 2) != Status::COMPLETED)
         return Status::ERROR;
@@ -553,7 +545,7 @@ Status DaisyChain::readCellVoltages(float *cellVoltages, uint8_t cellVoltageCoun
     int16_t voltage_signed = 0;
     uint8_t v_hi = 0;
     uint8_t v_lo = 0;
-    for(uint8_t i = (this->deviceCount - 2); i >= 0; i--){
+    for(int8_t i = (this->deviceCount - 2); i >= 0; i--){
         for(int8_t j = cellVoltageCount - 1; j >= 0; j--){
             voltage_raw = 0;
             voltage_signed = 0;
@@ -740,7 +732,7 @@ Status DaisyChain::readCellTemperature(float *cellTemperatures, uint8_t cellTemp
     uint16_t tsref_raw = 0;
     float v_tsref[this->deviceCount-1];
 
-    for(uint8_t i = (this->deviceCount - 2); i >= 0; i--){
+    for(int8_t i = (this->deviceCount - 2); i >= 0; i--){
         tsref_hi = 0;
         tsref_lo = 0;
         tsref_raw = 0;
@@ -764,7 +756,7 @@ Status DaisyChain::readCellTemperature(float *cellTemperatures, uint8_t cellTemp
     float gpiox_voltage  = 0;
     float r_ntc = 0;
 
-    for(uint8_t i = (this->deviceCount - 2); i >= 0; i--){
+    for(int8_t i = (this->deviceCount - 2); i >= 0; i--){
         for(uint8_t j = 0; j < cellTemperatureCount; j++){
             gpiox_hi = 0;
             gpiox_lo = 0;
@@ -788,6 +780,12 @@ Status DaisyChain::readCellTemperature(float *cellTemperatures, uint8_t cellTemp
     return Status::COMPLETED;
 }
 
+/**
+ * Should almost be the proper implementation.
+ *
+ * @param dieTemperature
+ * @return
+ */
 Status DaisyChain::readDieTemperature(float *dieTemperature) {
     Parallel::delay(10);
     if(read(ReqType::BROADCAST_READ, Device::MULTIPLE_DEVICES,  ReadOnlyRegister::DIETEMP1_HI, 2) != Status::COMPLETED)
