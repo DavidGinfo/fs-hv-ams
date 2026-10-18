@@ -10,6 +10,16 @@ project**: the files were exported from a different development infrastructure,
 and parts of the original repository, tooling, generated files, configuration,
 and integration environment are not included here.
 
+## System overview
+
+The following overview illustrates the system structure around the BQ battery
+monitoring chips, including the MCU, the BQ79600 interface device, and the
+daisy-chained BQ7961x devices connected to the battery modules.
+
+![BQ7961x battery monitoring system overview](docs/images/bq7961x-system-overview.gif)
+
+Image source: [Texas Instruments – BQ79616-Q1](https://www.ti.com/product/de-de/BQ79616-Q1)
+
 ## What is included
 
 The repository brings together three related layers:
